@@ -1,0 +1,27 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+overflow-x: hidden;
+}
+/* Hide scrollbar for WebKit browsers */
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge, and Firefox */
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+
+  /* In your global CSS file, e.g., App.css or styles.css */
+@media print {
+  #resumeContent {
+    font-size: 0.75rem; /* Reduce font size specifically for PDF */
+  }
+}
+.small-font {
+  font-size: 0.75rem;
+}

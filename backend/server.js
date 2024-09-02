@@ -1,0 +1,49 @@
+const express = require("express");
+const sequelize = require("./config/db");
+require("dotenv").config();
+const userRoutes = require("../backend/routes/userRoutes");
+const app = express();
+const cors = require("cors");
+const session = require("express-session");
+const passport = require("./config/passportConfig");
+app.use(express.json());
+app.use(cors());
+
+app.use(
+  session({
+    secret: process.env.SECRET_KEY || "RamKashyap",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use("/users", userRoutes);
+
+app.get("/getuser", async (req, res) => {
+  const { User } = require("./models/User");
+
+  async function testFindByPk() {
+    try {
+      const user = await User.findByPk(1); // Replace with a valid user ID
+      console.log(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  }
+
+  testFindByPk();
+});
+
+sequelize
+  .sync()
+  .then(() => {
+    console.log("Database synced successfully.");
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error("Error syncing the database:", err);
+  });
