@@ -1,4 +1,5 @@
 const express = require("express");
+require("pg");
 const sequelize = require("./config/db");
 require("dotenv").config();
 const userRoutes = require("../backend/routes/userRoutes");
