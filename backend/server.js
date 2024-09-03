@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require('path');
 require("pg");
 const sequelize = require("./config/db");
 require("dotenv").config();
@@ -9,6 +10,7 @@ const session = require("express-session");
 const passport = require("./config/passportConfig");
 app.use(express.json());
 app.use(cors());
+
 
 app.use(
   session({
@@ -23,20 +25,20 @@ app.use(passport.session());
 
 app.use("/users", userRoutes);
 
-app.get("/getuser", async (req, res) => {
-  const { User } = require("./models/User");
+// app.get("/getuser", async (req, res) => {
+//   const { User } = require("./models/User");
 
-  async function testFindByPk() {
-    try {
-      const user = await User.findByPk(1); // Replace with a valid user ID
-      console.log(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-    }
-  }
+//   async function testFindByPk() {
+//     try {
+//       const user = await User.findByPk(1); // Replace with a valid user ID
+//       console.log(user);
+//     } catch (error) {
+//       console.error("Error fetching user:", error);
+//     }
+//   }
 
-  testFindByPk();
-});
+//   testFindByPk();
+// });
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
