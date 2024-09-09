@@ -1,0 +1,28 @@
+    /* customStyles.css */
+
+/* Style for the control (input field) */
+.googleplaces {
+    border-radius: 10px; /* Custom border radius */
+    height: 50px; /* Increase control height */
+  }
+  
+  /* Style for the dropdown menu */
+  .custom__menu {
+    border: 2px solid blue; /* Customize border */
+  }
+  
+  /* Style for the options list inside the dropdown */
+  .custom__menu-list {
+    max-height: 300px; /* Ensure the list is scrollable */
+  }
+  
+  /* Style for each option in the dropdown */
+  .custom__option--is-focused {
+    background-color: lightgrey; /* Focused option background color */
+  }
+  
+  .custom__option--is-selected {
+    background-color: blue; /* Selected option background color */
+    color: white; /* Text color for selected option */
+  }
+  

@@ -1,16 +1,68 @@
 import React from "react";
-import { Grid, TextField, Button, MenuItem } from "@mui/material";
+import { Grid, TextField, Button, MenuItem, Box } from "@mui/material";
+import axios from "axios";
+import {
+  GoogleMap,
+  useJsApiLoader,
+  StandaloneSearchBox,
+} from "@react-google-maps/api";
+import { useRef } from "react";
 
+const libraries = ["places"];
 const countries = [
   { code: "+1", label: "USA" },
+  { code: "+1", label: "Canada" },
   { code: "+91", label: "India" },
   { code: "+44", label: "UK" },
-  // Add more countries as needed
+  { code: "+61", label: "Australia" },
+  // add other countries here...
 ];
 
 const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
+  const inputref = useRef(null);
+  const { isLoaded } = useJsApiLoader({
+    id: "google-map-script",
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+    libraries: libraries,
+  });
+
+  const handleOnPlacesChanged = () => {
+    const places = inputref.current.getPlaces();
+    if (places && places.length > 0) {
+      const address = places[0].formatted_address;
+      onBioChange({
+        target: {
+          name: "location",
+          value: address, // Set location field
+        },
+      });
+    }
+  };
+
+  const handleSubmit = async () => {
+    onNext();
+    try {
+      const response = await axios.post("/resume/resume-bio", {
+        firstName: bio.firstName,
+        lastName: bio.lastName,
+        countryCode: bio.countryCode,
+        phoneNumber: bio.phoneNumber,
+        email: bio.email,
+        linkedinProfile: bio.linkedinProfile,
+        githubLink: bio.githubLink,
+        websiteLink: bio.websiteLink,
+        location: bio.location,
+      });
+
+      console.log("Response from backend:", response.data);
+
+      // Proceed to the next step after successful submission
+    } catch (error) {
+      console.error("Error submitting user bio:", error);
+    }
+  };
   return (
-    <div style={{ padding: "2rem" }}>
+    <Box sx={{ padding: "2rem" }}>
       <h2 style={{ marginBottom: "2rem" }}>User Bio</h2>
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
@@ -102,61 +154,50 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
         <Grid item xs={12} sm={4}>
           <TextField
             fullWidth
-            label="Location"
-            name="location"
-            value={bio.location}
+            label="Website Link"
+            name="websiteLink"
+            value={bio.websiteLink}
             onChange={onBioChange}
             variant="outlined"
           />
         </Grid>
 
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="City"
-            name="city"
-            value={bio.city}
-            onChange={onBioChange}
-            variant="outlined"
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="Province"
-            name="province"
-            value={bio.province}
-            onChange={onBioChange}
-            variant="outlined"
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="Country"
-            name="country"
-            value={bio.country}
-            onChange={onBioChange}
-            variant="outlined"
-          />
+        {/* Location field using Google Places Autocomplete */}
+        <Grid item xs={12}>
+          {isLoaded && (
+            <StandaloneSearchBox
+              onLoad={(ref) => (inputref.current = ref)}
+              onPlacesChanged={handleOnPlacesChanged}
+            >
+              <TextField
+                fullWidth
+                label="Location"
+                variant="outlined"
+                placeholder="Start typing your address"
+                inputProps={{
+                  style: {
+                    padding: "12px",
+                  },
+                }}
+              />
+            </StandaloneSearchBox>
+          )}
         </Grid>
       </Grid>
 
-      <Grid container spacing={2} style={{ marginTop: "20px" }}>
+      <Grid container spacing={2} sx={{ marginTop: "20px" }}>
         <Grid item>
           <Button variant="contained" onClick={onBack}>
             Back
           </Button>
         </Grid>
         <Grid item>
-          <Button variant="contained" color="primary" onClick={onNext}>
+          <Button variant="contained" color="primary" onClick={handleSubmit}>
             Next
           </Button>
         </Grid>
       </Grid>
-    </div>
+    </Box>
   );
 };
 

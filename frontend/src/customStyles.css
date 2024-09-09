@@ -1,0 +1,35 @@
+/* customStyles.css */
+
+/* Style for the control (input field) */
+.my-control {
+    border-radius: 5px;
+    border: 2px solid red;
+  }
+  
+  .my-control-focused {
+    border: 2px solid blue;
+    box-shadow: 0 0 5px blue;
+  }
+  
+  /* Style for the dropdown menu */
+  .my-menu {
+    border: 2px solid lightgray;
+  }
+  
+  /* Style for selected option */
+  .my-option-selected {
+    background-color: blue;
+    color: white;
+  }
+  
+  /* Style for non-selected options */
+  .my-option {
+    background-color: white;
+    color: black;
+  }
+  
+  /* Add hover effects for options */
+  .my-option:hover {
+    background-color: lightgray;
+  }
+  

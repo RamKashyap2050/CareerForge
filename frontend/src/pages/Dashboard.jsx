@@ -40,7 +40,8 @@ const Dashboard = () => {
   });
 
   const [paperContent, setPaperContent] = useState([]);
-
+  console.log(paperContent);
+  console.log(resumeData);
   const handleNewResume = () => {
     setIsCreatingResume(true);
     setCurrentStep(0);
@@ -69,13 +70,15 @@ const Dashboard = () => {
 
     switch (currentStep) {
       case 0:
-        newContent = `Phone: ${resumeData.bio.phoneNumber}, Email: ${resumeData.bio.email}, LinkedIn: ${resumeData.bio.linkedinProfile}, Github: ${resumeData.bio.githubLink}, Location: ${resumeData.bio.location}, ${resumeData.bio.city}, ${resumeData.bio.province}, ${resumeData.bio.country}`;
+        newContent = `Phone: ${resumeData.bio.phoneNumber}, Email: ${resumeData.bio.email}, LinkedIn: ${resumeData.bio.linkedinProfile}, Github: ${resumeData.bio.githubLink}, Website: ${resumeData.bio.websiteLink}, Location: ${resumeData.bio.location}`;
         break;
       case 1:
         newContent = `${resumeData.summary}`;
         break;
       case 2:
-        newContent = `Skills: ${resumeData.skills.join(", ")}`;
+        newContent = `<ul>${resumeData.skills
+          .map((skill) => `<li>${skill}</li>`)
+          .join("")}</ul>`;
         break;
       case 3:
         newContent = `Experience: ${resumeData.experiences
@@ -104,7 +107,12 @@ const Dashboard = () => {
         break;
     }
 
-    setPaperContent([...paperContent, newContent]);
+    // Update paper content and advance to the next step
+    setPaperContent((prevContent) => {
+      const updatedContent = [...prevContent];
+      updatedContent[currentStep] = newContent; // Replace the content for the current step
+      return updatedContent;
+    });
     setCurrentStep((prevStep) => prevStep + 1);
   };
 
@@ -122,8 +130,67 @@ const Dashboard = () => {
     setResumeData({ ...resumeData, summary: e.target.value });
   };
 
+  // const handleSkillAdd = (skill) => {
+  //   setResumeData({ ...resumeData, skills: [...resumeData.skills, skill] });
+  // };
+  // const handleSkillAdd = (skill) => {
+  //   setResumeData((prevData) => ({
+  //     ...prevData,
+  //     skills: [...prevData.skills, skill],
+  //   }));
+  // };
+
+  // // Function to update the skills array
+  // const updateSkills = (updatedSkills) => {
+  //   console.log("Updating skills in parent:", updatedSkills); // Debugging
+  //   setResumeData((prevData) => ({
+  //     ...prevData,
+  //     skills: updatedSkills,
+  //   }));
+  // };
+
+  // Add a new skill and update paper content
   const handleSkillAdd = (skill) => {
-    setResumeData({ ...resumeData, skills: [...resumeData.skills, skill] });
+    setResumeData((prevData) => {
+      const updatedSkills = [...prevData.skills, skill];
+      const updatedResumeData = {
+        ...prevData,
+        skills: updatedSkills,
+      };
+
+      // Immediately update the paper content for skills
+      setPaperContent((prevContent) => {
+        const updatedContent = [...prevContent];
+        updatedContent[2] = `<ul>${updatedSkills
+          .map((skill) => `<li>${skill}</li>`)
+          .join("")}</ul>`;
+        return updatedContent;
+      });
+
+      return updatedResumeData;
+    });
+  };
+
+  // Function to update the skills array
+  const updateSkills = (updatedSkills) => {
+    console.log("Updating skills in parent:", updatedSkills);
+    setResumeData((prevData) => {
+      const updatedResumeData = {
+        ...prevData,
+        skills: updatedSkills,
+      };
+
+      // Immediately update the paper content for skills
+      setPaperContent((prevContent) => {
+        const updatedContent = [...prevContent];
+        updatedContent[2] = `<ul>${updatedSkills
+          .map((skill) => `<li>${skill}</li>`)
+          .join("")}</ul>`;
+        return updatedContent;
+      });
+
+      return updatedResumeData;
+    });
   };
 
   const handleEducationChange = (newEducation) => {
@@ -464,25 +531,19 @@ const Dashboard = () => {
         return doc.body;
       };
 
-      // Bio Section
+      drawText(
+        `${resumeData.bio.firstName} ${resumeData.bio.lastName}`,
+        boldFont,
+        fontSize,
+        {
+          align: "center",
+        }
+      );
+
+      // Draw the other bio information in a single paragraph
       parseHtmlAndDraw(
         parseHtml(
-          `<p><strong>${resumeData.bio.firstName} ${resumeData.bio.lastName}</strong></p>`
-        )
-      );
-      parseHtmlAndDraw(
-        parseHtml(`<p>Phone: ${resumeData.bio.phoneNumber}</p>`)
-      );
-      parseHtmlAndDraw(parseHtml(`<p>Email: ${resumeData.bio.email}</p>`));
-      parseHtmlAndDraw(
-        parseHtml(`<p>LinkedIn: ${resumeData.bio.linkedinProfile}</p>`)
-      );
-      parseHtmlAndDraw(
-        parseHtml(`<p>Github: ${resumeData.bio.githubLink}</p>`)
-      );
-      parseHtmlAndDraw(
-        parseHtml(
-          `<p>Location: ${resumeData.bio.location}, ${resumeData.bio.city}, ${resumeData.bio.province}, ${resumeData.bio.country}</p>`
+          `<p>Phone: ${resumeData.bio.phoneNumber}, Email: ${resumeData.bio.email}, LinkedIn: ${resumeData.bio.linkedinProfile}, Github: ${resumeData.bio.githubLink}, Location: ${resumeData.bio.location}, ${resumeData.bio.city}, ${resumeData.bio.province}, ${resumeData.bio.country}</p>`
         )
       );
 
@@ -596,6 +657,7 @@ const Dashboard = () => {
                 onSkillAdd={handleSkillAdd}
                 onNext={handleNextStep}
                 onBack={handlePrevStep}
+                modifyOrDeleteSkill={updateSkills} // Pass the function to the child
               />
             )}
             {currentStep === 3 && (
