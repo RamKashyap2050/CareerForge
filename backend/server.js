@@ -35,7 +35,6 @@ app.use(passport.session());
 
 app.use("/users", userRoutes);
 app.use("/resume", resumeRoutes);
-const ResumeSummary = require("../backend/models/ResumeSummary");
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
