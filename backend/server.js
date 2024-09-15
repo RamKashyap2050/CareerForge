@@ -9,11 +9,7 @@ const app = express();
 const cors = require("cors");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
-const ResumeExperience = require("../backend/models/ResumeExperience");
-const ResumeSkills = require("../backend/models/ResumeSkill");
-const ResumeEducation = require("../backend/models/ResumeEducation");
-const Resume = require("../backend/models/Resume");
-const ResumeExtraSection = require("../backend/models/ResumeExtraSection");
+
 app.use(cors());
 app.use(
   cors({
@@ -40,6 +36,7 @@ app.use(passport.session());
 
 app.use("/users", userRoutes);
 app.use("/resume", resumeRoutes);
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
