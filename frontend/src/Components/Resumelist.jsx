@@ -3,19 +3,19 @@ import axios from "axios";
 import { Box, Button, Typography } from "@mui/material";
 
 const ResumeList = ({ onNewResume, onPrint, onDownload }) => {
-  const [resumes, setResumes] = useState([]);
+  // const [resumes, setResumes] = useState([]);
   const [hover, setHover] = useState(false);
 
-  useEffect(() => {
-    axios
-      .get("/resumes")
-      .then((response) => {
-        setResumes(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching resumes:", error);
-      });
-  }, []);
+  // useEffect(() => {
+  //   axios
+  //     .get("/resumes")
+  //     .then((response) => {
+  //       setResumes(response.data);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error fetching resumes:", error);
+  //     });
+  // }, []);
 
   return (
     <div style={{ marginTop: "2rem" }}>
@@ -51,7 +51,7 @@ const ResumeList = ({ onNewResume, onPrint, onDownload }) => {
         </Button>
       </Box>
 
-      {/* Only map resumes if they exist */}
+      {/* Only map resumes if they exist
       {resumes.length > 0 && (
         <ul>
           {resumes.map((resume) => (
@@ -86,11 +86,11 @@ const ResumeList = ({ onNewResume, onPrint, onDownload }) => {
       )}
 
       {/* Optionally, you can add a message if no resumes exist */}
-      {resumes.length === 0 && (
+      {/* {resumes.length === 0 && (
         <Typography variant="body1" sx={{ textAlign: "center" }}>
           No resumes available. Please create a new resume.
         </Typography>
-      )}
+      )} */} 
     </div>
   );
 };
