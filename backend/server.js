@@ -8,9 +8,19 @@ const userRoutes = require("../backend/routes/userRoutes");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
-const passport = require("./config/passportConfig");
-app.use(express.json());
+const cookieParser = require("cookie-parser");
 app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Your frontend URL
+    credentials: true, // Allows sending cookies with cross-origin requests
+  })
+);
+app.use(cookieParser("RamKashyap"));
+
+app.use(express.json());
+
+const passport = require("./config/passportConfig");
 
 app.use(
   session({
@@ -25,22 +35,7 @@ app.use(passport.session());
 
 app.use("/users", userRoutes);
 app.use("/resume", resumeRoutes);
-
-// app.get("/getuser", async (req, res) => {
-//   const { User } = require("./models/User");
-
-//   async function testFindByPk() {
-//     try {
-//       const user = await User.findByPk(1); // Replace with a valid user ID
-//       console.log(user);
-//     } catch (error) {
-//       console.error("Error fetching user:", error);
-//     }
-//   }
-
-//   testFindByPk();
-// });
-
+const ResumeSummary = require("../backend/models/ResumeSummary");
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
 

@@ -18,13 +18,14 @@ const ResumeSkills = sequelize.define(
       },
       onDelete: "CASCADE",
     },
-    Summary: {
-      type: DataTypes.STRING,
+    Skills: {
+      type: DataTypes.TEXT,
       allowNull: false,
     },
   },
   {
     timestamps: true,
+    tableName: "ResumeSkills",
   }
 );
 

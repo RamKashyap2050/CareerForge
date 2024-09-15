@@ -1,53 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Box, Button, Typography } from "@mui/material";
 
-const ResumeList = ({ resumes, onNewResume, onPrint, onDownload }) => {
+const ResumeList = ({ onNewResume, onPrint, onDownload }) => {
+  const [resumes, setResumes] = useState([]);
   const [hover, setHover] = useState(false);
 
-  const styles = {
-    button: {
-      backgroundColor: "#424242", // Dark Grey
-      color: "#ffffff", // White text for contrast
-      padding: "12px 24px",
-      fontSize: "16px",
-      borderRadius: "30px",
-      border: "none",
-      cursor: "pointer",
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-      transition: "all 0.3s ease",
-      fontWeight: "bold",
-      textTransform: "uppercase",
-      letterSpacing: "1px",
-    },
-    buttonHover: {
-      backgroundColor: "#333333", // Slightly darker grey on hover
-      transform: "scale(1.05)",
-    },
-  };
+  useEffect(() => {
+    axios
+      .get("/resumes")
+      .then((response) => {
+        setResumes(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching resumes:", error);
+      });
+  }, []);
 
   return (
-    <div>
-      <button
-        style={
-          hover ? { ...styles.button, ...styles.buttonHover } : styles.button
-        }
-        onClick={onNewResume}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
+    <div style={{ marginTop: "2rem"}}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "1rem",
+          borderRadius: "8px",
+          marginBottom: "1rem",
+        }}
       >
-        Create New Resume
-      </button>
-      <h2>My Resumes</h2>
+        {/* Typography for the heading */}
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+          My Resumes
+        </Typography>
+
+        {/* MUI Button for "Create New Resume" */}
+        <Button
+          variant="contained" // Filled button
+          size="medium"
+          sx={{
+            backgroundColor: hover ? "#424242" : "#333333", // Color change on hover
+            transition: "all 0.3s ease", // Smooth transition for hover effect
+            textTransform: "uppercase", // Uppercase text for emphasis
+            fontWeight: "bold", // Bold text
+            letterSpacing: "1px", // Slight letter spacing
+          }}
+          onClick={onNewResume}
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
+        >
+          Create New Resume
+        </Button>
+      </Box>
       <ul>
         {resumes.map((resume) => (
           <li key={resume.id}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
               <div>
                 <button onClick={() => onPrint(resume.id)}>🖨️ Print</button>
-                <button onClick={() => onDownload(resume.id)}>
-                  📥 Download
-                </button>
+                {resume.status === "completed" && (
+                  <button onClick={() => onDownload(resume.id)}>
+                    📥 Download
+                  </button>
+                )}
               </div>
-              <span>{resume.name}</span>
+              <span>{resume.name || "Untitled Resume"}</span>
+              {resume.status === "draft" ? (
+                <span style={{ fontStyle: "italic", color: "orange" }}>
+                  Draft
+                </span>
+              ) : (
+                <span style={{ fontStyle: "italic", color: "green" }}>
+                  Completed
+                </span>
+              )}
               <div>
                 <button>Edit</button>
                 <button>Delete</button>

@@ -1,14 +1,29 @@
 import React, { useState } from "react";
-
+import axios from "axios";
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleMenu = () => {
     setMenuOpen(!menuOpen);
   };
+  const handleClose = () => {};
 
-  const handleClose = () => {
-    setMenuOpen(false);
+  const handleLogout = async () => {
+    try {
+      // Make a POST request to the logout route on the server
+      await axios.post("/users/logout");
+
+      // Close the menu after logout
+      handleClose();
+
+      // Optionally, you can clear any stored user data (e.g., tokens, localStorage)
+      localStorage.removeItem("token"); // If you're using JWT or any stored token
+
+      // Optionally, redirect the user to the login or homepage after logout
+      window.location.href = "/login"; // Or use a routing library like react-router
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   const styles = {
@@ -94,7 +109,7 @@ const Navbar = () => {
         <div style={styles.menuItem} onClick={handleClose}>
           Profile
         </div>
-        <div style={styles.menuItem} onClick={handleClose}>
+        <div style={styles.menuItem} onClick={handleLogout}>
           Logout
         </div>
       </div>

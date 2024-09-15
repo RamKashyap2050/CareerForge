@@ -1,7 +1,6 @@
 import create from "zustand";
 import axios from "axios";
 
-
 const useAuthStore = create((set) => ({
   user: null,
 
@@ -16,7 +15,7 @@ const useAuthStore = create((set) => ({
       });
 
       const userData = response.data.user; // Assuming the backend returns user data in the response
-      console.log(userData)
+      console.log(userData);
       // Set the user data in the Zustand store
       set({ user: userData });
     } catch (error) {
@@ -32,13 +31,13 @@ const useAuthStore = create((set) => ({
         email: formData.email,
         password: formData.password,
       });
-      console.log(response.data)
+      console.log(response.data);
       const { user, token } = response.data;
       set({ user });
 
       // Store the token
-      localStorage.setItem("authToken", token);
-      navigate("/dashboard")
+      localStorage.setItem("token", token);
+      navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);
     }

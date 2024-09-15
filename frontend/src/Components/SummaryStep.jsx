@@ -2,10 +2,36 @@ import React from "react";
 import { Button, Grid } from "@mui/material";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // import styles for Quill
-
+import axios from "axios";
 const SummaryStep = ({ summary, onSummaryChange, onNext }) => {
   const handleSummaryChange = (value) => {
-    onSummaryChange({ target: { value } });
+    onSummaryChange({ target: { value } }); // 'value' is the HTML content from Quill
+  };
+
+  const handleSubmit = async () => {
+    onNext();
+    try {
+      // Fetch resumeId from localStorage if it exists
+      const savedResumeId = JSON.parse(localStorage.getItem("resumeId"));
+      console.log(savedResumeId)
+      // Send the PUT request with the resumeId and summary
+      const response = await axios.put(
+        "/resume/resume-summary",
+        {
+          resumeId: savedResumeId, // Fetch resumeId from localStorage
+          summary, // Send the formatted content as HTML
+        },
+        {
+          withCredentials: true, // This ensures cookies are sent along with the request (important for session-based auth)
+        }
+      );
+
+      console.log("Response from backend:", response.data);
+      // Proceed to the next step
+    } catch (error) {
+      console.error("Error submitting summary:", error);
+      alert("There was an error submitting your summary. Please try again.");
+    }
   };
 
   return (
@@ -28,7 +54,7 @@ const SummaryStep = ({ summary, onSummaryChange, onNext }) => {
           <Button
             variant="contained"
             color="primary"
-            onClick={onNext}
+            onClick={handleSubmit}
             style={{ marginTop: "20px" }}
           >
             Next

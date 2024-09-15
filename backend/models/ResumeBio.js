@@ -26,6 +26,10 @@ const ResumeBio = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    Email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     PhoneNumber: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -49,6 +53,7 @@ const ResumeBio = sequelize.define(
   },
   {
     timestamps: true,
+    tableName: "ResumeBio",
   }
 );
 

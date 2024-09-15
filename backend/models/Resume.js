@@ -1,8 +1,8 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../config/db"); // Ensure you have the correct path to your database configuration
 
-const ResumeBio = sequelize.define(
-  "ResumeBio",
+const Resume = sequelize.define(
+  "Resume",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -27,9 +27,16 @@ const ResumeBio = sequelize.define(
       },
       onDelete: "CASCADE",
     },
+    ResumeSummary: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: "ResumeSummary",
+        key: "id",
+      },
+      onDelete: "CASCADE",
+    },
     ResumeSkills: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: "ResumeSkills",
         key: "id",
@@ -38,7 +45,6 @@ const ResumeBio = sequelize.define(
     },
     ResumeExperience: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: "ResumeExperience",
         key: "id",
@@ -47,7 +53,6 @@ const ResumeBio = sequelize.define(
     },
     ResumeEducation: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: "ResumeEducation",
         key: "id",
@@ -56,12 +61,15 @@ const ResumeBio = sequelize.define(
     },
     ResumeExtraSection: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: "ResumeExtraSection",
         key: "id",
       },
       onDelete: "CASCADE",
+    },
+    Status: {
+      type: DataTypes.ENUM("draft", "completed"),
+      defaultValue: "draft",
     },
   },
   {

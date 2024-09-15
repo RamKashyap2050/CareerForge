@@ -22,6 +22,10 @@ const ResumeExperience = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    RoleTitle: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     StartDate: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -31,12 +35,13 @@ const ResumeExperience = sequelize.define(
       allowNull: false,
     },
     ExperienceSummary: {
-      type: DataTypes.TEXT, 
-      allowNull: true, 
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
   },
   {
     timestamps: true,
+    tableName: "ResumeExperience",
   }
 );
 

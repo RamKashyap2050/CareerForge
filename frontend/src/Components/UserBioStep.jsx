@@ -40,27 +40,48 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
   };
 
   const handleSubmit = async () => {
-    onNext();
+    onNext(); // Proceed to the next step, you can keep this as per your flow
+
     try {
-      const response = await axios.post("/resume/resume-bio", {
-        firstName: bio.firstName,
-        lastName: bio.lastName,
-        countryCode: bio.countryCode,
-        phoneNumber: bio.phoneNumber,
-        email: bio.email,
-        linkedinProfile: bio.linkedinProfile,
-        githubLink: bio.githubLink,
-        websiteLink: bio.websiteLink,
-        location: bio.location,
-      });
+      // Fetch resumeId from localStorage if it exists
+      const savedResumeId = JSON.parse(localStorage.getItem("resumeId"));
+
+      const response = await axios.put(
+        "/resume/resume-bio",
+        {
+          resumeId: savedResumeId || null, // Send resumeId if it exists, otherwise send null for creation
+          firstName: bio.firstName,
+          lastName: bio.lastName,
+          countryCode: bio.countryCode,
+          phoneNumber: bio.phoneNumber,
+          email: bio.email,
+          linkedinProfile: bio.linkedinProfile,
+          githubLink: bio.githubLink,
+          websiteLink: bio.websiteLink,
+          location: bio.location,
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
       console.log("Response from backend:", response.data);
 
-      // Proceed to the next step after successful submission
+      if (response.data.resumeId) {
+        localStorage.setItem(
+          "resumeId",
+          JSON.stringify(response.data.resumeId)
+        );
+      }
+
     } catch (error) {
       console.error("Error submitting user bio:", error);
+      alert(
+        "There was an error submitting your information. Please try again."
+      );
     }
   };
+
   return (
     <Box sx={{ padding: "2rem" }}>
       <h2 style={{ marginBottom: "2rem" }}>User Bio</h2>

@@ -47,6 +47,7 @@ const signup = expressAsyncHandler(async (req, res) => {
 const login = expressAsyncHandler(async (req, res, next) => {
   console.log("Request Body:", req.body); // Log the request body
   passport.authenticate("local", (err, user) => {
+
     if (err) {
       return next(err);
     }
@@ -115,4 +116,26 @@ const experienceSuggest = expressAsyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { login, signup, skillsuggest, experienceSuggest };
+const logout = expressAsyncHandler((req, res, next) => {
+  req.logout(function (err) {
+    if (err) {
+      return next(err);
+    }
+    res.status(200).json({ message: "Logged out successfully" });
+  });
+});
+// Middleware to protect routes
+const isAuthenticated = expressAsyncHandler((req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ message: "Unauthorized" });
+});
+module.exports = {
+  login,
+  signup,
+  skillsuggest,
+  experienceSuggest,
+  logout,
+  isAuthenticated,
+};

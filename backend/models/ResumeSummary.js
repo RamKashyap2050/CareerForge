@@ -25,6 +25,7 @@ const ResumeSummary = sequelize.define(
   },
   {
     timestamps: true,
+    tableName: "ResumeSummary",
   }
 );
 

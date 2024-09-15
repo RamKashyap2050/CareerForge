@@ -22,14 +22,15 @@ const ResumeExtraSection = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-  
+
     ExtraSectionSummary: {
-      type: DataTypes.TEXT, 
-      allowNull: true, 
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
   },
   {
     timestamps: true,
+    tableName: "ResumeExtraSection",
   }
 );
 
@@ -47,5 +48,4 @@ sequelize
     )
   );
 
-module.exports = ResumeExperience;
- 
+module.exports = ResumeExtraSection;

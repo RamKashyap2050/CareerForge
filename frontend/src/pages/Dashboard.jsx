@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../Components/Navbar";
 import ResumeList from "../Components/Resumelist";
 import UserBioStep from "../Components/UserBioStep";
@@ -40,9 +40,29 @@ const Dashboard = () => {
   });
 
   const [paperContent, setPaperContent] = useState([]);
+  const [isActiveStep, setIsActiveStep] = useState(false); // New state to track whether an active step is in progress
+
+  // UseEffect to handle the page refresh or close alert based on active steps
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (isActiveStep) { // Only show the alert if the user is in an active step
+        event.preventDefault();
+        event.returnValue = ''; // Display a browser-native warning
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload); // Cleanup on unmount
+    };
+  }, [isActiveStep]); // Re-run whenever the active state changes
+
+
   console.log(paperContent);
   console.log(resumeData);
   const handleNewResume = () => {
+    setIsActiveStep(true); // Set step as active when advancing
     setIsCreatingResume(true);
     setCurrentStep(0);
     setResumeData({
@@ -81,7 +101,7 @@ const Dashboard = () => {
           .join("")}</ul>`;
         break;
       case 3:
-        newContent = `Experience: ${resumeData.experiences
+        newContent = `${resumeData.experiences
           .map(
             (exp) =>
               `<strong>${exp.companyName} (${exp.startDate} - ${
@@ -94,7 +114,7 @@ const Dashboard = () => {
           .join("")}`;
         break;
       case 4: // New case for EducationStep
-        newContent = `Education: ${resumeData.education
+        newContent = `${resumeData.education
           .map(
             (edu) =>
               `${edu.instituteName} - ${edu.degreeType} (${edu.startDate} - ${
@@ -124,10 +144,12 @@ const Dashboard = () => {
   const handleBioChange = (e) => {
     const { name, value } = e.target;
     setResumeData({ ...resumeData, bio: { ...resumeData.bio, [name]: value } });
+    setIsActiveStep(true); // Set step as active when advancing
   };
 
   const handleSummaryChange = (e) => {
     setResumeData({ ...resumeData, summary: e.target.value });
+    setIsActiveStep(true); // Set step as active when advancing
   };
 
   // const handleSkillAdd = (skill) => {
@@ -151,6 +173,7 @@ const Dashboard = () => {
 
   // Add a new skill and update paper content
   const handleSkillAdd = (skill) => {
+    setIsActiveStep(true); // Set step as active when advancing
     setResumeData((prevData) => {
       const updatedSkills = [...prevData.skills, skill];
       const updatedResumeData = {
@@ -194,10 +217,12 @@ const Dashboard = () => {
   };
 
   const handleEducationChange = (newEducation) => {
+    setIsActiveStep(true); // Set step as active when advancing
     setResumeData({ ...resumeData, education: newEducation });
   };
 
   const generatePDF = async () => {
+    setIsActiveStep(false); // Disable active state when generating PDF (final step)
     console.log(resumeData);
     try {
       const pdfDoc = await PDFDocument.create();
@@ -536,20 +561,24 @@ const Dashboard = () => {
         boldFont,
         fontSize,
         {
-          align: "center",
+          align: "start",
         }
       );
-
-      // Draw the other bio information in a single paragraph
       parseHtmlAndDraw(
         parseHtml(
-          `<p>Phone: ${resumeData.bio.phoneNumber}, Email: ${resumeData.bio.email}, LinkedIn: ${resumeData.bio.linkedinProfile}, Github: ${resumeData.bio.githubLink}, Location: ${resumeData.bio.location}, ${resumeData.bio.city}, ${resumeData.bio.province}, ${resumeData.bio.country}</p>`
+          `<p>Phone: ${resumeData.bio.phoneNumber} | Email: ${resumeData.bio.email}</p>`
         )
+      );
+      parseHtmlAndDraw(
+        parseHtml(
+          `<p>LinkedIn: ${resumeData.bio.linkedinProfile} | GitHub: ${resumeData.bio.githubLink}| Website: ${resumeData.bio.websiteLink} </p>`
+        )
+      );
+      parseHtmlAndDraw(
+        parseHtml(`<p>Location: ${resumeData.bio.location}</p>`)
       );
 
       drawSeparator();
-
-      // Professional Summary Section
       // Professional Summary Section
       drawText("Professional Summary:", boldFont, fontSize, {
         align: "center",
@@ -569,7 +598,6 @@ const Dashboard = () => {
 
       drawSeparator();
 
-      // Skills Section
       drawText("Skills:", boldFont, fontSize, { align: "center" });
       parseHtmlAndDraw(parseHtml(resumeData.skills.join(", ")));
 

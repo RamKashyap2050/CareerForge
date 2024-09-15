@@ -41,6 +41,7 @@ const ResumeEducation = sequelize.define(
   },
   {
     timestamps: true,
+    tableName: "ResumeEducation",
   }
 );
 
