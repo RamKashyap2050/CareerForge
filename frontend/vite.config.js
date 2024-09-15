@@ -15,4 +15,5 @@ export default defineConfig({
       },
     },
   },
+  base: "./", // Change the base configuration to an object
 });
