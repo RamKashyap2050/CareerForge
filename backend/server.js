@@ -11,10 +11,26 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 
 app.use(cors());
+// Define allowed origins dynamically based on environment
+const allowedOrigins = [
+  "http://localhost:5173", // Development frontend
+  "https://careerforgedhere.vercel.app", // Production frontend
+];
+
+// CORS Configuration - Dynamic based on request origin
 app.use(
   cors({
-    origin: "http://localhost:5173" || "https://careerforgedhere.vercel.app", // Your frontend URL
-    credentials: true, // Allows sending cookies with cross-origin requests
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true, // Allows cookies to be sent with cross-origin requests
   })
 );
 app.use(cookieParser("RamKashyap"));
