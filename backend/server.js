@@ -28,10 +28,6 @@ app.use(
     secret: process.env.SECRET_KEY || "RamKashyap",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // Only send cookies over HTTPS in production
-      httpOnly: true, // Prevent client-side JS from reading the cookie
-    },
   })
 );
 
