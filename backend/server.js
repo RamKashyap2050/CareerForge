@@ -10,6 +10,7 @@ const cors = require("cors");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 
+app.use(cors());
 app.use(
   cors({
     origin: "http://localhost:5173" || "https://careerforgedhere.vercel.app", // Your frontend URL
