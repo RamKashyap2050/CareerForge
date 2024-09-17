@@ -13,7 +13,7 @@ const cookieParser = require("cookie-parser");
 app.use(cors());
 app.use(
   cors({
-    origin: "http://localhost:5173", // Your frontend URL
+    origin: "http://localhost:5173" || "https://careerforgedhere.vercel.app", // Your frontend URL
     credentials: true, // Allows sending cookies with cross-origin requests
   })
 );
