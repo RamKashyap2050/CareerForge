@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import EducationStep from "../Components/EducationStep";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
-
+import axios from "axios";
 const Dashboard = () => {
   // Use this function in your component or trigger it with a button click
 
@@ -41,23 +41,138 @@ const Dashboard = () => {
 
   const [paperContent, setPaperContent] = useState([]);
   const [isActiveStep, setIsActiveStep] = useState(false); // New state to track whether an active step is in progress
+  //New Code for Editing Resumes
+
+  const [isEditing, setIsEditing] = useState(false); // Control whether in edit mode
+  const [resumeId, setResumeId] = useState(null); // Track the selected resume ID
+  const [loading, setLoading] = useState(false); // For handling loading state
+  const [isStepInitialized, setIsStepInitialized] = useState(false);
+
+  // useEffect that only runs when a resume is selected for editing
+  useEffect(() => {
+    if (isEditing && resumeId) {
+      setLoading(true);
+      setIsCreatingResume(true); // Mark as editing/creating mode
+
+      axios
+        .get(`/resume/resumes/${resumeId}`, { withCredentials: true })
+        .then((response) => {
+          const data = response.data;
+          console.log("Fetched resume data:", data);
+
+          // Set resume data in state
+          setResumeData({
+            bio: data.resumeBio || {},
+            summary: data.resumeSummary?.Summary || "",
+            skills:
+              data.resumeSkills?.Skills?.split(",").map((skill) =>
+                skill.trim()
+              ) || [], // Ensures skills are stored as an array
+            experiences: data.resumeExperience || [],
+            education: data.resumeEducation || [],
+          });
+
+          // Initialize paper content based on the fetched resume data
+          const initializedPaperContent = [
+            // Contact information
+            `Phone: ${data.resumeBio?.PhoneNumber || ""}, Email: ${
+              data.resumeBio?.Email || ""
+            }, LinkedIn: ${data.resumeBio?.LinkedInLink || ""}, Github: ${
+              data.resumeBio?.GithubLink || ""
+            }, Location: ${data.resumeBio?.Location || ""}`,
+
+            // Summary
+            data.resumeSummary?.Summary || "",
+
+            // Skills as a list
+            `<ul>${(data.resumeSkills?.Skills || "")
+              .split(",")
+              .map((skill) => `<li>${skill.trim()}</li>`)
+              .join("")}</ul>`,
+
+            // Experiences formatted into a list
+            (data.resumeExperience || [])
+              .map(
+                (exp) =>
+                  `<strong>${exp.companyName || ""} (${exp.startDate || ""} - ${
+                    exp.endDate || ""
+                  }): ${exp.occupation || ""}</strong><ul>${(exp.summary || "")
+                    .split("\n")
+                    .map((point) => `<li>${point}</li>`)
+                    .join("")}</ul>`
+              )
+              .join(""),
+
+            // Education section
+            (data.resumeEducation || [])
+              .map(
+                (edu) =>
+                  `${edu.instituteName || ""} - ${edu.degreeType || ""} (${
+                    edu.startDate || ""
+                  } - ${
+                    edu.currentlyEnrolled ? "Present" : edu.endDate || ""
+                  }): ${edu.gradesAchievements || ""}`
+              )
+              .join(", "),
+          ];
+
+          // Set paper content in state
+          setPaperContent(initializedPaperContent);
+
+          // Set the initial step based on available data (ensure this runs only once)
+          if (!isStepInitialized) {
+            if (data.resumeEducation) {
+              setCurrentStep(4);
+            } else if (data.resumeExperience?.length > 0) {
+              setCurrentStep(3);
+            } else if (data.resumeSkills?.Skills?.length > 0) {
+              setCurrentStep(2);
+            } else if (data.resumeSummary?.Summary) {
+              setCurrentStep(1);
+            } else {
+              setCurrentStep(0);
+            }
+            setIsStepInitialized(true); // Mark steps as initialized
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching resume data:", error);
+        })
+        .finally(() => {
+          setLoading(false); // Stop loading once data is fetched
+        });
+    }
+  }, [isEditing, resumeId, isStepInitialized]);
+
+  const handleEditResume = (id) => {
+    console.log("Editing Resume with ID:", id);
+    localStorage.setItem("resumeId", id);
+    setResumeId(id);
+    setIsEditing(true);
+  };
+
+  useEffect(() => {
+    console.log("Updated resumeId:", resumeId);
+    console.log("Updated isEditing:", isEditing);
+  }, [resumeId, isEditing]);
 
   // UseEffect to handle the page refresh or close alert based on active steps
   useEffect(() => {
     const handleBeforeUnload = (event) => {
-      if (isActiveStep) { // Only show the alert if the user is in an active step
+      if (isActiveStep) {
+        // Only show the alert if the user is in an active step
         event.preventDefault();
-        event.returnValue = ''; // Display a browser-native warning
+        event.returnValue = ""; // Display a browser-native warning
+        localStorage.removeItem("resumeId");
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload); // Cleanup on unmount
+      window.removeEventListener("beforeunload", handleBeforeUnload); // Cleanup on unmount
     };
   }, [isActiveStep]); // Re-run whenever the active state changes
-
 
   console.log(paperContent);
   console.log(resumeData);
@@ -85,43 +200,60 @@ const Dashboard = () => {
     });
     setPaperContent([]);
   };
+
   const handleNextStep = () => {
     let newContent = "";
-
+    console.log("In Next Step I am Resume Data", resumeData);
     switch (currentStep) {
       case 0:
-        newContent = `Phone: ${resumeData.bio.phoneNumber}, Email: ${resumeData.bio.email}, LinkedIn: ${resumeData.bio.linkedinProfile}, Github: ${resumeData.bio.githubLink}, Website: ${resumeData.bio.websiteLink}, Location: ${resumeData.bio.location}`;
+        newContent = `Phone: ${
+          resumeData.bio.phoneNumber || resumeData.bio.PhoneNumber || ""
+        }, Email: ${
+          resumeData.bio.email || resumeData.bio.Email || ""
+        }, LinkedIn: ${
+          resumeData.bio.linkedinProfile || resumeData.bio.LinkedInLink || ""
+        }, Github: ${
+          resumeData.bio.githubLink || resumeData.bio.GithubLink || ""
+        }, Location: ${
+          resumeData.bio.location || resumeData.bio.Location || ""
+        }`;
         break;
       case 1:
-        newContent = `${resumeData.summary}`;
+        newContent = resumeData.summary || "";
         break;
       case 2:
-        newContent = `<ul>${resumeData.skills
+        newContent = `<ul>${(
+          resumeData.skills ||
+          resumeData.Skills.skills ||
+          []
+        )
           .map((skill) => `<li>${skill}</li>`)
           .join("")}</ul>`;
         break;
       case 3:
-        newContent = `${resumeData.experiences
+        newContent = (resumeData.experiences || [])
           .map(
             (exp) =>
-              `<strong>${exp.companyName} (${exp.startDate} - ${
-                exp.endDate
-              }): ${exp.occupation}</strong><ul>${exp.summary
+              `<strong>${exp.companyName || ""} (${exp.startDate || ""} - ${
+                exp.endDate || ""
+              }): ${exp.occupation || ""}</strong><ul>${(exp.summary || "")
                 .split("\n")
                 .map((point) => `<li>${point}</li>`)
                 .join("")}</ul>`
           )
-          .join("")}`;
+          .join("");
         break;
-      case 4: // New case for EducationStep
-        newContent = `${resumeData.education
+      case 4: // EducationStep
+        newContent = (resumeData.education || [])
           .map(
             (edu) =>
-              `${edu.instituteName} - ${edu.degreeType} (${edu.startDate} - ${
-                edu.currentlyEnrolled ? "Present" : edu.endDate
-              }): ${edu.gradesAchievements}`
+              `${edu.instituteName || ""} - ${edu.degreeType || ""} (${
+                edu.startDate || ""
+              } - ${edu.currentlyEnrolled ? "Present" : edu.endDate || ""}): ${
+                edu.gradesAchievements || ""
+              }`
           )
-          .join(", ")}`;
+          .join(", ");
         break;
       default:
         break;
@@ -133,12 +265,18 @@ const Dashboard = () => {
       updatedContent[currentStep] = newContent; // Replace the content for the current step
       return updatedContent;
     });
-    setCurrentStep((prevStep) => prevStep + 1);
+
+    // Prevent navigation beyond the last step (e.g., step 4 in your case)
+    if (currentStep < 4) {
+      setCurrentStep((prevStep) => prevStep + 1);
+    }
   };
 
   const handlePrevStep = () => {
-    setPaperContent(paperContent.slice(0, -1)); // Remove the last step's content
-    setCurrentStep((prevStep) => prevStep - 1);
+    if (currentStep > 0) {
+      setPaperContent(paperContent.slice(0, -1)); // Remove the last step's content
+      setCurrentStep((prevStep) => prevStep - 1); // Move to the previous step
+    }
   };
 
   const handleBioChange = (e) => {
@@ -646,11 +784,19 @@ const Dashboard = () => {
     }
   };
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div>
       <Navbar />
       {!isCreatingResume && (
-        <ResumeList resumes={resumes} onNewResume={handleNewResume} />
+        <ResumeList
+          resumes={resumes}
+          onNewResume={handleNewResume}
+          onEdit={handleEditResume}
+        />
       )}
       {isCreatingResume && (
         <Grid
@@ -666,6 +812,7 @@ const Dashboard = () => {
           >
             {currentStep === 0 && (
               <UserBioStep
+                isEditing={isEditing}
                 bio={resumeData.bio}
                 onBioChange={handleBioChange}
                 onNext={handleNextStep}

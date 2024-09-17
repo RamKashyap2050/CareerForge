@@ -64,7 +64,7 @@ const PaperComponent = ({ content, resumeData, style }) => {
 const getSectionTitle = (index, resumeData) => {
   switch (index) {
     case 0:
-      return `${resumeData.bio.firstName} ${resumeData.bio.lastName}`;
+      return `${resumeData.bio.firstName || resumeData.bio.FirstName} ${resumeData.bio.lastName || resumeData.bio.LastName}`;
     case 1:
       return "Professional Summary";
     case 2:

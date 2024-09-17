@@ -6,7 +6,7 @@ import {
   useJsApiLoader,
   StandaloneSearchBox,
 } from "@react-google-maps/api";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 
 const libraries = ["places"];
 const countries = [
@@ -18,13 +18,20 @@ const countries = [
   // add other countries here...
 ];
 
-const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
+const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
   const inputref = useRef(null);
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: libraries,
   });
+
+  useEffect(() => {
+    // If in edit mode and bio already has data, ensure it is populated correctly
+    if (isEditing && bio) {
+      console.log("Editing mode - bio data loaded", bio);
+    }
+  }, [isEditing, bio]);
 
   const handleOnPlacesChanged = () => {
     const places = inputref.current.getPlaces();
@@ -73,7 +80,6 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
           JSON.stringify(response.data.resumeId)
         );
       }
-
     } catch (error) {
       console.error("Error submitting user bio:", error);
       alert(
@@ -91,7 +97,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
             fullWidth
             label="First Name"
             name="firstName"
-            value={bio.firstName}
+            value={bio.FirstName || ""} // Default to empty string if no data
             onChange={onBioChange}
             variant="outlined"
           />
@@ -101,7 +107,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
             fullWidth
             label="Last Name"
             name="lastName"
-            value={bio.lastName}
+            value={bio.LastName || ""} // Default to empty string if no data
             onChange={onBioChange}
             variant="outlined"
           />
@@ -115,7 +121,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
                 fullWidth
                 label="Country Code"
                 name="countryCode"
-                value={bio.countryCode || ""}
+                value={bio.countryCode || ""} // Default to empty string if no data
                 onChange={onBioChange}
                 variant="outlined"
               >
@@ -131,7 +137,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
                 fullWidth
                 label="Phone Number"
                 name="phoneNumber"
-                value={bio.phoneNumber}
+                value={bio.PhoneNumber || ""} // Default to empty string if no data
                 onChange={onBioChange}
                 variant="outlined"
               />
@@ -144,7 +150,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
             fullWidth
             label="Email"
             name="email"
-            value={bio.email}
+            value={bio.Email || ""} // Default to empty string if no data
             onChange={onBioChange}
             variant="outlined"
           />
@@ -155,7 +161,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
             fullWidth
             label="LinkedIn Profile"
             name="linkedinProfile"
-            value={bio.linkedinProfile}
+            value={bio.LinkedInLink || ""} // Default to empty string if no data
             onChange={onBioChange}
             variant="outlined"
           />
@@ -166,7 +172,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
             fullWidth
             label="GitHub Link"
             name="githubLink"
-            value={bio.githubLink}
+            value={bio.GithubLink || ""} // Default to empty string if no data
             onChange={onBioChange}
             variant="outlined"
           />
@@ -177,7 +183,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
             fullWidth
             label="Website Link"
             name="websiteLink"
-            value={bio.websiteLink}
+            value={bio.WebsiteLink || ""} // Default to empty string if no data
             onChange={onBioChange}
             variant="outlined"
           />
@@ -195,6 +201,8 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack }) => {
                 label="Location"
                 variant="outlined"
                 placeholder="Start typing your address"
+                value={bio.Location || ""} // Ensure location is populated correctly
+                onChange={onBioChange} // Optional manual change handler
                 inputProps={{
                   style: {
                     padding: "12px",

@@ -78,7 +78,7 @@ const SkillsStep = ({
     setEditorContent(content);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     // Parse the editor content to extract the list of skills
     const parser = new DOMParser();
     const doc = parser.parseFromString(editorContent, "text/html");
@@ -91,7 +91,26 @@ const SkillsStep = ({
     // Update the parent component's state with the final list of skills
     modifyOrDeleteSkill(updatedSkills);
 
-    onNext();
+    try {
+      const savedResumeId = JSON.parse(localStorage.getItem("resumeId"));
+
+      const response = await axios.put(
+        "/resume/resume-skills", // Ensure this matches your route
+        {
+          resumeId: savedResumeId,
+          skills: updatedSkills, // Send the updated skills array
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log("Skills updated successfully:", response.data);
+      onNext(); // Move to the next step after successfully saving
+    } catch (error) {
+      console.error("Error updating skills:", error);
+      alert("There was an error updating your skills. Please try again.");
+    }
   };
 
   return (

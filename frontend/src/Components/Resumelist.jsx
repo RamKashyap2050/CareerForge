@@ -1,21 +1,40 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Box, Button, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Typography,
+  Card,
+  CardContent,
+  CardActions,
+  Grid,
+  Tooltip,
+} from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import DownloadIcon from "@mui/icons-material/Download";
+import PrintIcon from "@mui/icons-material/Print";
 
-const ResumeList = ({ onNewResume, onPrint, onDownload }) => {
-  // const [resumes, setResumes] = useState([]);
+const ResumeList = ({ onNewResume, onPrint, onDownload, onEdit }) => {
+  const [resumes, setResumes] = useState([]);
   const [hover, setHover] = useState(false);
+  useEffect(() => {
+    axios
+      .get("/resume/resumes", {
+        withCredentials: true,
+      })
+      .then((response) => {
+        setResumes(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching resumes:", error);
+      });
+  }, []);
 
-  // useEffect(() => {
-  //   axios
-  //     .get("/resumes")
-  //     .then((response) => {
-  //       setResumes(response.data);
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching resumes:", error);
-  //     });
-  // }, []);
+
+  const onDelete = (id) => {
+    // logic for deleting resume
+  };
 
   return (
     <div style={{ marginTop: "2rem" }}>
@@ -51,46 +70,87 @@ const ResumeList = ({ onNewResume, onPrint, onDownload }) => {
         </Button>
       </Box>
 
-      {/* Only map resumes if they exist
-      {resumes.length > 0 && (
-        <ul>
+      {resumes.length > 0 ? (
+        <Grid container spacing={2}>
           {resumes.map((resume) => (
-            <li key={resume.id}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <div>
-                  <button onClick={() => onPrint(resume.id)}>🖨️ Print</button>
-                  {resume.status === "completed" && (
-                    <button onClick={() => onDownload(resume.id)}>
-                      📥 Download
-                    </button>
+            <Grid item xs={12} md={6} lg={4} key={resume.id}>
+              <Card sx={{ minHeight: "150px" }}>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    {resume.resumeBio.FirstName} {resume.resumeBio.LastName}
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    color="textSecondary"
+                    gutterBottom
+                  >
+                    {resume.resumeBio.Email}
+                  </Typography>
+                  <Typography variant="body2">
+                    <strong>Phone:</strong> {resume.resumeBio.PhoneNumber}
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontStyle: "italic",
+                      color: resume.Status === "draft" ? "orange" : "green",
+                    }}
+                  >
+                    {resume.Status === "draft" ? "Draft" : "Completed"}
+                  </Typography>
+                </CardActions>
+                <CardActions>
+                  {resume.Status === "Completed" && (
+                    <>
+                      <Button
+                        startIcon={<DownloadIcon />}
+                        onClick={() => onDownload(resume.id)}
+                        color="primary"
+                      >
+                        Download
+                      </Button>
+                      <Button
+                        startIcon={<PrintIcon />}
+                        onClick={() => onPrint(resume.id)}
+                        color="primary"
+                      >
+                        Print
+                      </Button>
+                    </>
                   )}
-                </div>
-                <span>{resume.name || "Untitled Resume"}</span>
-                {resume.status === "draft" ? (
-                  <span style={{ fontStyle: "italic", color: "orange" }}>
-                    Draft
-                  </span>
-                ) : (
-                  <span style={{ fontStyle: "italic", color: "green" }}>
-                    Completed
-                  </span>
-                )}
-                <div>
-                  <button>Edit</button>
-                  <button>Delete</button>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+                  <Tooltip title="Edit Resume" arrow>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      startIcon={<EditIcon />}
+                      onClick={() => onEdit(resume.id)}
+                    >
+                      Edit
+                    </Button>
+                  </Tooltip>
 
-      {/* Optionally, you can add a message if no resumes exist */}
-      {/* {resumes.length === 0 && (
+                  <Tooltip title="Delete Resume" arrow>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => onDelete(resume.id)}
+                    >
+                      Delete
+                    </Button>
+                  </Tooltip>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
         <Typography variant="body1" sx={{ textAlign: "center" }}>
           No resumes available. Please create a new resume.
         </Typography>
-      )} */} 
+      )}
     </div>
   );
 };

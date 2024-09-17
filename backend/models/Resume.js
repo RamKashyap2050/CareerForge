@@ -1,5 +1,12 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../config/db"); // Ensure you have the correct path to your database configuration
+// Import the related models
+const ResumeBio = require("./ResumeBio");
+const ResumeSummary = require("./ResumeSummary");
+const ResumeSkills = require("./ResumeSkill");
+const ResumeExperience = require("./ResumeExperience");
+const ResumeEducation = require("./ResumeEducation");
+const ResumeExtraSection = require("./ResumeExtraSection");
 
 const Resume = sequelize.define(
   "Resume",
@@ -76,6 +83,14 @@ const Resume = sequelize.define(
     timestamps: true,
   }
 );
+
+Resume.belongsTo(ResumeBio, { foreignKey: "ResumeBio", as: "resumeBio" });
+Resume.belongsTo(ResumeSummary, { foreignKey: "ResumeSummary", as: "resumeSummary" });
+Resume.belongsTo(ResumeSkills, { foreignKey: "ResumeSkills", as: "resumeSkills" });
+Resume.belongsTo(ResumeExperience, { foreignKey: "ResumeExperience", as: "resumeExperience" });
+Resume.belongsTo(ResumeEducation, { foreignKey: "ResumeEducation", as: "resumeEducation" });
+Resume.belongsTo(ResumeExtraSection, { foreignKey: "ResumeExtraSection", as: "resumeExtraSection" });
+
 
 sequelize
   .sync()
