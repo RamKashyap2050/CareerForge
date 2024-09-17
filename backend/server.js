@@ -33,6 +33,7 @@ app.use(
     credentials: true, // Allows cookies to be sent with cross-origin requests
   })
 );
+
 app.use(cookieParser("RamKashyap"));
 
 app.use(express.json());
@@ -44,6 +45,11 @@ app.use(
     secret: process.env.SECRET_KEY || "RamKashyap",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      httpOnly: true, // Ensures the cookie is only sent over HTTP(S)
+      secure: process.env.NODE_ENV === "production", // Only send cookies over HTTPS in production
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    },
   })
 );
 

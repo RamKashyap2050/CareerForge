@@ -47,7 +47,6 @@ const signup = expressAsyncHandler(async (req, res) => {
 const login = expressAsyncHandler(async (req, res, next) => {
   console.log("Request Body:", req.body); // Log the request body
   passport.authenticate("local", (err, user) => {
-
     if (err) {
       return next(err);
     }
@@ -129,6 +128,8 @@ const isAuthenticated = expressAsyncHandler((req, res, next) => {
   if (req.isAuthenticated()) {
     return next();
   }
+  console.log("Session ID:", req.sessionID); // For session-based auth
+  console.log("Token:", req.headers.authorization); // For token-based auth
   res.status(401).json({ message: "Unauthorized" });
 });
 module.exports = {

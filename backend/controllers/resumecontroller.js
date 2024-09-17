@@ -19,12 +19,12 @@ const getUserDraftResumes = expressAsyncHandler(async (req, res) => {
         Status: "draft",
       },
       include: [
-        { model: ResumeBio, as: "resumeBio" }, 
+        { model: ResumeBio, as: "resumeBio" },
         { model: ResumeSummary, as: "resumeSummary" },
-        { model: ResumeSkills, as: "resumeSkills" }, 
-        { model: ResumeExperience, as: "resumeExperience" }, 
-        { model: ResumeEducation, as: "resumeEducation" }, 
-        { model: ResumeExtraSection, as: "resumeExtraSection" }, 
+        { model: ResumeSkills, as: "resumeSkills" },
+        { model: ResumeExperience, as: "resumeExperience" },
+        { model: ResumeEducation, as: "resumeEducation" },
+        { model: ResumeExtraSection, as: "resumeExtraSection" },
       ],
     });
     res.status(200).json(draftResumes);
@@ -76,7 +76,7 @@ const createOrUpdateResumeBio = expressAsyncHandler(async (req, res) => {
   }
 
   const {
-    resumeId, 
+    resumeId,
     firstName,
     lastName,
     phoneNumber,
@@ -228,14 +228,15 @@ const updateResumeSkills = expressAsyncHandler(async (req, res) => {
         where: { id: resume.ResumeSkills },
       });
       await resumeSkills.update({
-        Skills: skills.join(", "), 
+        Skills: skills.join(", "),
       });
+      console.log(resumeSkills);
 
       res.status(200).json({ message: "Resume skills updated successfully" });
     } else {
       resumeSkills = await ResumeSkills.create({
         User: req.user.id,
-        Skills: skills.join(", "), 
+        Skills: skills.join(", "),
       });
 
       await resume.update({
@@ -258,5 +259,5 @@ module.exports = {
   updateResumeSummary,
   getUserDraftResumes,
   getDraftUserSingleResume,
-  updateResumeSkills
+  updateResumeSkills,
 };
