@@ -12,27 +12,26 @@ const cookieParser = require("cookie-parser");
 
 app.use(cors());
 // Define allowed origins dynamically based on environment
-const allowedOrigins = [
-  "http://localhost:5173", // Development frontend
-  "https://careerforgedhere.vercel.app", // Production frontend
-];
+// CORS Configuration for Development
+const devCors = cors({
+  origin: "http://localhost:5173", // Development frontend
+  credentials: true, // Allows cookies to be sent with cross-origin requests
+});
 
-// CORS Configuration - Dynamic based on request origin
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        const msg =
-          "The CORS policy for this site does not allow access from the specified origin.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
-    credentials: true, // Allows cookies to be sent with cross-origin requests
-  })
-);
+// CORS Configuration for Production
+const prodCors = cors({
+  origin: "https://careerforgedhere.vercel.app", // Production frontend
+  credentials: true, // Allows cookies to be sent with cross-origin requests
+});
+
+// Use the appropriate CORS based on the environment
+if (process.env.NODE_ENV === "production") {
+  console.log("Production environment detected, using prod CORS.");
+  app.use(prodCors); // Uncomment this for production
+} else {
+  console.log("Development environment detected, using dev CORS.");
+  app.use(devCors); // Uncomment this for development
+}
 
 app.use(cookieParser("RamKashyap"));
 
@@ -46,9 +45,9 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      httpOnly: true, // Ensures the cookie is only sent over HTTP(S)
-      secure: process.env.NODE_ENV === "production", // Only send cookies over HTTPS in production
-      maxAge: 1000 * 60 * 60 * 24, // 24 hours
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Only in production
+      sameSite: "lax", // Helps prevent CSRF while allowing cookies in same-origin
     },
   })
 );
