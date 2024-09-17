@@ -44,11 +44,6 @@ app.use(
     secret: process.env.SECRET_KEY || "RamKashyap",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Only in production
-      sameSite: "lax", // Helps prevent CSRF while allowing cookies in same-origin
-    },
   })
 );
 
