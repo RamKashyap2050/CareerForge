@@ -16,9 +16,10 @@ app.use(cors());
 // Your CORS setup (customize as per your environment)
 app.use(
   cors({
-    origin: process.env.NODE_ENV === "production" 
-      ? "https://careerforgedhere.vercel.app" 
-      : "http://localhost:5173",
+    origin:
+      process.env.NODE_ENV === "production"
+        ? "https://careerforgedhere.vercel.app"
+        : "http://localhost:5173",
     credentials: true,
   })
 );
