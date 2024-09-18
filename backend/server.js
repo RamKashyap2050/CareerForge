@@ -42,8 +42,11 @@ const passport = require("./config/passportConfig");
 app.use(
   session({
     secret: process.env.SECRET_KEY || "RamKashyap",
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: true,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+    },
   })
 );
 
