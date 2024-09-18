@@ -8,8 +8,7 @@ const userRoutes = require("../backend/routes/userRoutes");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
-const PgSession = require("connect-pg-simple")(session); // Import connect-pg-simple
-const pg = require("pg");
+
 const cookieParser = require("cookie-parser");
 
 app.use(cors());
@@ -29,35 +28,15 @@ app.use(cookieParser("RamKashyap"));
 app.use(express.json());
 
 const passport = require("./config/passportConfig");
-const pgPool = new pg.Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  ssl: {
-    rejectUnauthorized: false, // For self-signed SSL
-  },
-});
-// Configure session middleware with PostgreSQL store
+
 app.use(
   session({
-    store: new PgSession({
-      pool: pgPool, // Use your PostgreSQL pool
-      tableName: "session", // Optional: default is 'session'
-      createTableIfMissing: true, // Automatically create the session table if it's missing
-    }),
-    secret: process.env.SECRET_KEY || "mysecret",
-    resave: false, // Avoid resaving the session if not modified
-    saveUninitialized: false, // Don’t save uninitialized sessions
-    cookie: {
-      maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
-      secure: process.env.NODE_ENV === "production", // Ensure cookie is sent over HTTPS in production
-      httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
-      sameSite: "None", // Required for cross-origin requests
-    },
+    secret: process.env.SECRET_KEY || "RamKashyap", // Replace with your secret
+    resave: false,
+    saveUninitialized: false,
   })
 );
+app.use(passport.authenticate("session"));
 
 app.use(passport.initialize());
 app.use(passport.session());
