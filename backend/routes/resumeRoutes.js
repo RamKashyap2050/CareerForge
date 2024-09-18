@@ -9,10 +9,10 @@ const {
 const { isAuthenticated } = require("../controllers/usercontroller");
 const router = express.Router();
 
-router.route("/resume-bio").put(isAuthenticated, createOrUpdateResumeBio);
-router.route("/resume-summary").put(isAuthenticated, updateResumeSummary);
-router.route("/resumes").get(isAuthenticated, getUserDraftResumes);
-router.route("/resume-skills").put(isAuthenticated, updateResumeSkills )
+router.route("/resume-bio").put(createOrUpdateResumeBio);
+router.route("/resume-summary").put(updateResumeSummary);
+router.route("/resumes").get(getUserDraftResumes);
+router.route("/resume-skills").put(updateResumeSkills);
 router
   .route("/resumes/:resumeId")
   .get(isAuthenticated, getDraftUserSingleResume);
