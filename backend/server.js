@@ -59,7 +59,6 @@ app.use(
 );
 
 
-app.use(passport.authenticate("session"));
 
 app.use(passport.initialize());
 app.use(passport.session());
