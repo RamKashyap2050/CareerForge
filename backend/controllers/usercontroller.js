@@ -129,7 +129,7 @@ const isAuthenticated = expressAsyncHandler((req, res, next) => {
     return next();
   }
   console.log("Session ID:", req.sessionID); // For session-based auth
-  console.log("Token:", req.headers.authorization); // For token-based auth
+  console.log("Token:", req.headers.cookie); // For token-based auth
   res.status(401).json({ message: "Unauthorized" });
 });
 module.exports = {

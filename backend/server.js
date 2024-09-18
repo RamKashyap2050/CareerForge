@@ -8,30 +8,20 @@ const userRoutes = require("../backend/routes/userRoutes");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
+
 const cookieParser = require("cookie-parser");
+var SQLiteStore = require("connect-sqlite3")(session);
 
 app.use(cors());
-// Define allowed origins dynamically based on environment
-// CORS Configuration for Development
-const devCors = cors({
-  origin: "http://localhost:5173", // Development frontend
-  credentials: true, // Allows cookies to be sent with cross-origin requests
-});
-
-// CORS Configuration for Production
-const prodCors = cors({
-  origin: "https://careerforgedhere.vercel.app", // Production frontend
-  credentials: true, // Allows cookies to be sent with cross-origin requests
-});
-
-// Use the appropriate CORS based on the environment
-if (process.env.NODE_ENV === "production") {
-  console.log("Production environment detected, using prod CORS.");
-  app.use(prodCors); // Uncomment this for production
-} else {
-  console.log("Development environment detected, using dev CORS.");
-  app.use(devCors); // Uncomment this for development
-}
+// Your CORS setup (customize as per your environment)
+app.use(
+  cors({
+    origin: process.env.NODE_ENV === "production" 
+      ? "https://careerforgedhere.vercel.app" 
+      : "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 app.use(cookieParser("RamKashyap"));
 
@@ -39,25 +29,20 @@ app.use(express.json());
 
 const passport = require("./config/passportConfig");
 
-// app.use(
-//   session({
-//     secret: process.env.SECRET_KEY || "RamKashyap",
-//     resave: false,
-//     saveUninitialized: false,
-//   })
-// );
-
-var sess = {
-  secret: "keyboard cat",
-  cookie: {},
-};
-
-if (app.get("env") === "production") {
-  app.set("trust proxy", 1); // trust first proxy
-  sess.cookie.secure = true; // serve secure cookies
-}
-
-app.use(session(sess));
+app.use(
+  session({
+    store: new SQLiteStore({ db: "sessions.sqlite" }), // SQLite for session storage
+    secret: process.env.SECRET_KEY || "mysecretkey", // Replace with your secret
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
+      sameSite: "lax", // Cookie same-site setting
+    },
+  })
+);
+app.use(passport.authenticate("session"));
 
 app.use(passport.initialize());
 app.use(passport.session());
