@@ -39,16 +39,25 @@ app.use(express.json());
 
 const passport = require("./config/passportConfig");
 
-app.use(
-  session({
-    secret: process.env.SECRET_KEY || "RamKashyap",
-    resave: true,
-    saveUninitialized: true,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-    },
-  })
-);
+// app.use(
+//   session({
+//     secret: process.env.SECRET_KEY || "RamKashyap",
+//     resave: false,
+//     saveUninitialized: false,
+//   })
+// );
+
+var sess = {
+  secret: "keyboard cat",
+  cookie: {},
+};
+
+if (app.get("env") === "production") {
+  app.set("trust proxy", 1); // trust first proxy
+  sess.cookie.secure = true; // serve secure cookies
+}
+
+app.use(session(sess));
 
 app.use(passport.initialize());
 app.use(passport.session());
