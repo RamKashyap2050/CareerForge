@@ -45,6 +45,7 @@ app.use(
     store: new PgSession({
       pool: pgPool, // Use your PostgreSQL pool
       tableName: "session", // Optional: default is 'session'
+      createTableIfMissing: true, // Automatically create the session table if it's missing
     }),
     secret: process.env.SECRET_KEY || "mysecret",
     resave: false, // Avoid resaving the session if not modified
@@ -57,8 +58,6 @@ app.use(
     },
   })
 );
-
-
 
 app.use(passport.initialize());
 app.use(passport.session());
