@@ -138,5 +138,5 @@ module.exports = {
   skillsuggest,
   experienceSuggest,
   logout,
-  isAuthenticated,
+  // isAuthenticated,
 };
