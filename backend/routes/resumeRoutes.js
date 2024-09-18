@@ -6,7 +6,7 @@ const {
   getDraftUserSingleResume,
   updateResumeSkills,
 } = require("../controllers/resumecontroller");
-const { isAuthenticated } = require("../controllers/usercontroller");
+// const { isAuthenticated } = require("../controllers/usercontroller");
 const router = express.Router();
 
 router.route("/resume-bio").put(createOrUpdateResumeBio);
@@ -15,5 +15,5 @@ router.route("/resumes").get(getUserDraftResumes);
 router.route("/resume-skills").put(updateResumeSkills);
 router
   .route("/resumes/:resumeId")
-  .get(isAuthenticated, getDraftUserSingleResume);
+  .get( getDraftUserSingleResume);
 module.exports = router;
