@@ -8,9 +8,9 @@ const userRoutes = require("../backend/routes/userRoutes");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
-
+const PgSession = require("connect-pg-simple")(session); // Import connect-pg-simple
+const pg = require("pg");
 const cookieParser = require("cookie-parser");
-var SQLiteStore = require("connect-sqlite3")(session);
 
 app.use(cors());
 // Your CORS setup (customize as per your environment)
@@ -29,20 +29,36 @@ app.use(cookieParser("RamKashyap"));
 app.use(express.json());
 
 const passport = require("./config/passportConfig");
-
+const pgPool = new pg.Pool({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  ssl: {
+    rejectUnauthorized: false, // For self-signed SSL
+  },
+});
+// Configure session middleware with PostgreSQL store
 app.use(
   session({
-    store: new SQLiteStore({ db: "sessions.sqlite" }), // SQLite for session storage
-    secret: process.env.SECRET_KEY || "mysecretkey", // Replace with your secret
-    resave: false,
-    saveUninitialized: false,
+    store: new PgSession({
+      pool: pgPool, // Use your PostgreSQL pool
+      tableName: "session", // Optional: default is 'session'
+    }),
+    secret: process.env.SECRET_KEY || "mysecret",
+    resave: false, // Avoid resaving the session if not modified
+    saveUninitialized: false, // Don’t save uninitialized sessions
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
       maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
-      sameSite: "lax", // Cookie same-site setting
+      secure: process.env.NODE_ENV === "production", // Ensure cookie is sent over HTTPS in production
+      httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
+      sameSite: "None", // Required for cross-origin requests
     },
   })
 );
+
+
 app.use(passport.authenticate("session"));
 
 app.use(passport.initialize());
