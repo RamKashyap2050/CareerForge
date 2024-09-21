@@ -33,9 +33,6 @@ const passport = require("./config/passportConfig");
 // Create a new PostgreSQL pool
 const pgPool = new pg.Pool({
   connectionString: process.env.POSTGRES_URL,
-  ssl: {
-    rejectUnauthorized: false, // For production if you have SSL
-  },
 });
 
 app.use(
