@@ -125,6 +125,7 @@ const logout = expressAsyncHandler((req, res, next) => {
 });
 // Middleware to protect routes
 const isAuthenticated = expressAsyncHandler((req, res, next) => {
+  console.log("Session data:", JSON.stringify(req.session, null, 2)); // Log the session data here
   if (req.isAuthenticated()) {
     return next();
   }
@@ -132,6 +133,7 @@ const isAuthenticated = expressAsyncHandler((req, res, next) => {
   console.log("Token:", req.headers.cookie); // For token-based auth
   res.status(401).json({ message: "Unauthorized" });
 });
+
 module.exports = {
   login,
   signup,

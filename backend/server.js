@@ -38,18 +38,21 @@ const pgPool = new pg.Pool({
 app.use(
   session({
     store: new PgSession({
-      pool: pgPool, // Use your PostgreSQL connection pool
-      tableName: "session", // You can specify a custom table name if needed
+      pool: pgPool,
+      tableName: "session",
+      debug: true, // Enable debug mode
     }),
-    secret: process.env.SECRET_KEY || "RamKashyap", // Replace with your own secret
+    secret: process.env.SECRET_KEY || "RamKashyap",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Only use secure cookies in production
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
     },
   })
 );
+
 app.use(passport.authenticate("session"));
 
 app.use(passport.initialize());
