@@ -8,8 +8,9 @@ const userRoutes = require("../backend/routes/userRoutes");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
-const PgSession = require("connect-pg-simple")(session);
+const SequelizeStore = require('connect-session-sequelize')(session.Store); // Use Sequelize to store sessions
 const pg = require("pg");
+const Session = require('./models/Session'); // The Session model
 
 const cookieParser = require("cookie-parser");
 
@@ -37,18 +38,17 @@ const pgPool = new pg.Pool({
 
 app.use(
   session({
-    store: new PgSession({
-      pool: pgPool,
-      tableName: "session",
-      debug: true, // Enable debug mode
+    secret: process.env.SECRET_KEY || 'RamKashyap',
+    store: new SequelizeStore({
+      db: sequelize,
+      table: 'Session', // Use the custom session model/table
+      modelKey: 'Session', // This should match your Session model
     }),
-    secret: process.env.SECRET_KEY || "RamKashyap",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Ensure secure cookies in production
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     },
   })
 );
