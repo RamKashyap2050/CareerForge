@@ -38,18 +38,19 @@ const pgPool = new pg.Pool({
 
 app.use(
   session({
-    store: new PgSession({
-      pool: pgPool,
-      tableName: "session",
+    secret: process.env.SECRET_KEY || 'RamKashyap',
+    store: new SequelizeStore({
+      db: sequelize,
+      table: 'Session', // Use the custom session model/table
+      modelKey: 'Session', // This should match your Session model
     }),
-    secret: process.env.SECRET_KEY || "your-secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Secure cookie in production
-      httpOnly: true,
-      sameSite: "None", // This is important for cross-origin requests
+      secure: process.env.NODE_ENV === 'production', // Ensure secure cookies in production
+      httpOnly: true, // Prevents client-side access to the cookie
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Set SameSite based on environment
     },
   })
 );
