@@ -36,6 +36,7 @@ passport.deserializeUser(async (id, done) => {
   console.log("Deserializing user with ID:", id);
   try {
     const user = await User.findByPk(id); // Fetch user from the DB
+    console.log('Deserializing user:', user); // Log this to verify user is retrieved
     if (user) {
       done(null, user); // Pass user to req.user
     } else {

@@ -38,22 +38,31 @@ const pgPool = new pg.Pool({
 
 app.use(
   session({
-    secret: process.env.SECRET_KEY || "RamKashyap",
+    secret: process.env.SECRET_KEY || 'RamKashyap',
     store: new SequelizeStore({
       db: sequelize,
-      table: "Session", // Use the custom session model/table
-      modelKey: "Session", // This should match your Session model
+      table: 'Session',
+      modelKey: 'Session',
+      extendDefaultFields: (defaults, session) => {
+        console.log("Saving session for user:", session.passport ? session.passport.user : 'No user');
+        return {
+          data: defaults.data,
+          expires: defaults.expires,
+          userId: session.passport && session.passport.user ? session.passport.user : null, // Store the userId
+        };
+      }
     }),
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: true, // Set `false` for development so it works over HTTP
-      httpOnly: true, // Prevents client-side access to the cookie
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: "none", // 'lax' is good for development
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     },
   })
 );
+
 app.use((req, res, next) => {
   console.log(
     "Session data after login:",
