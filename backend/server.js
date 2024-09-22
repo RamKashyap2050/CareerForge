@@ -52,10 +52,11 @@ app.use(
         };
       }
     }),
+    proxy: true, // Required for Heroku & Digital Ocean (regarding X-Forwarded-For)
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
