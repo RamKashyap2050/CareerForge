@@ -27,18 +27,17 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  console.log("Serializing user ID:", user.id); // Only store the user ID
-  done(null, user.id); // Store the user ID in the session
+  // Store the user ID in the session
+  console.log("Serializing user with ID:", user.id);
+  done(null, user.id);
 });
 
-console.log("User model:", User);
-
 passport.deserializeUser(async (id, done) => {
-  console.log("Deserializing user with ID:", id); // Should be the ID, not the whole user object
+  console.log("Deserializing user with ID:", id);
   try {
-    const user = await User.findByPk(id); // Fetch user by ID
+    const user = await User.findByPk(id); // Fetch user from the DB
     if (user) {
-      done(null, user); // Attach user to req.user
+      done(null, user); // Pass user to req.user
     } else {
       done(null, false); // No user found
     }
@@ -46,5 +45,6 @@ passport.deserializeUser(async (id, done) => {
     done(err); // Handle errors
   }
 });
+
 
 module.exports = passport;
