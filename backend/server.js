@@ -39,17 +39,29 @@ const pgPool = new pg.Pool({
 app.use(
   session({
     secret: process.env.SECRET_KEY || 'RamKashyap',
+    store: new SequelizeStore({
+      db: sequelize,
+      table: 'Session',
+      modelKey: 'Session',
+      extendDefaultFields: (defaults, session) => {
+        console.log("Saving session for user:", session.passport ? session.passport.user : 'No user');
+        return {
+          data: defaults.data,
+          expires: defaults.expires,
+          userId: session.passport && session.passport.user ? session.passport.user : null, // Store the userId
+        };
+      }
+    }),
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Set to true in production
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      maxAge: 30 * 24 * 60 * 60 * 1000,
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     },
   })
 );
-
 
 app.use((req, res, next) => {
   console.log(
