@@ -8,9 +8,9 @@ const userRoutes = require("../backend/routes/userRoutes");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
-const SequelizeStore = require('connect-session-sequelize')(session.Store); // Use Sequelize to store sessions
+const SequelizeStore = require("connect-session-sequelize")(session.Store); // Use Sequelize to store sessions
 const pg = require("pg");
-const Session = require('./models/Session'); // The Session model
+const Session = require("./models/Session"); // The Session model
 
 const cookieParser = require("cookie-parser");
 
@@ -38,23 +38,29 @@ const pgPool = new pg.Pool({
 
 app.use(
   session({
-    secret: process.env.SECRET_KEY || 'RamKashyap',
+    secret: process.env.SECRET_KEY || "RamKashyap",
     store: new SequelizeStore({
       db: sequelize,
-      table: 'Session', // Use the custom session model/table
-      modelKey: 'Session', // This should match your Session model
+      table: "Session", // Use the custom session model/table
+      modelKey: "Session", // This should match your Session model
     }),
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // Ensure secure cookies in production
+      secure: true, // Set `false` for development so it works over HTTP
       httpOnly: true, // Prevents client-side access to the cookie
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Set SameSite based on environment
+      sameSite: "none", // 'lax' is good for development
     },
   })
 );
-
+app.use((req, res, next) => {
+  console.log(
+    "Session data after login:",
+    JSON.stringify(req.session, null, 2)
+  );
+  next();
+});
 
 app.use(passport.authenticate("session"));
 
