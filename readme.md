@@ -39,21 +39,7 @@
 - **File Management**: PDF-lib for generating downloadable PDFs.
 - **Other Tools**: Axios for API calls, Google Maps API for location autocomplete.
 
-## **Project Structure**
-
-```bash
-|-- backend/
-|   |-- config/
-|   |-- controllers/
-|   |-- models/
-|   |-- routes/
-|   |-- middleware/
-|-- frontend/
-|   |-- src/
-|   |   |-- components/
-|   |   |-- pages/
-|   |   |-- utils/
-|   |-- public/
+## **Instructions**
 
 git clone https://github.com/yourusername/resume-builder.git
 cd resume-builder
@@ -78,10 +64,12 @@ npm run dev
 ## **API Endpoints**
 
 ### **Authentication:**
+
 - **POST** `/users/login`: Log a user in.
 - **POST** `/users/register`: Register a new user.
 
 ### **Resume Management:**
+
 - **GET** `/resume/resumes`: Fetch all resumes for the authenticated user.
 - **GET** `/resume/resumes/:resumeId`: Fetch a specific resume by ID.
 - **PUT** `/resume/resume-bio`: Create or update a resume bio.
@@ -89,10 +77,11 @@ npm run dev
 - **PUT** `/resume/resume-experience`: Add or update work experience in a resume.
 
 ### **Experience Management:**
+
 - **POST** `/resume/experience`: Add a new experience.
 
-
 ### **PDF Generation:**
+
 - **POST** `/pdf/generate`: Generate a downloadable PDF for a resume.
 
 ---
@@ -107,3 +96,21 @@ Here are some ideas for future enhancements to the Resume Builder:
 - LinkedIn API integration for importing professional data.
 - Improved resume recommendations and analytics.
 
+## **Project Structure**
+
+```bash
+|-- backend/
+|   |-- config/
+|   |-- controllers/
+|   |-- models/
+|   |-- routes/
+|   |-- middleware/
+|-- frontend/
+|   |-- src/
+|   |   |-- components/
+|   |   |-- pages/
+|   |   |-- utils/
+|   |-- public/
+
+
+```
