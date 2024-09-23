@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../config/db"); // Ensure you have the correct path to your database configuration
+const Resume = require("./Resume"); // Import the Resume model
 
 const ResumeExperience = sequelize.define(
   "ResumeExperience",
@@ -18,6 +19,14 @@ const ResumeExperience = sequelize.define(
       },
       onDelete: "CASCADE",
     },
+    ResumeId: {
+      type: DataTypes.INTEGER,
+      allowNull: false, // Link to a specific resume
+      references: {
+        model: "Resume",
+        key: "id",
+      },
+    },
     CompanyName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -32,7 +41,7 @@ const ResumeExperience = sequelize.define(
     },
     EndDate: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
     ExperienceSummary: {
       type: DataTypes.TEXT,
@@ -44,6 +53,8 @@ const ResumeExperience = sequelize.define(
     tableName: "ResumeExperience",
   }
 );
+
+
 
 sequelize
   .sync()

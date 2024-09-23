@@ -6,6 +6,7 @@ import SummaryStep from "../Components/SummaryStep";
 import SkillsStep from "../Components/SkillsStep";
 import ExperienceStep from "../Components/ExperienceStep";
 import Paper from "../Components/Paper";
+import { format } from "date-fns";
 import {
   Grid,
   Box,
@@ -68,7 +69,7 @@ const Dashboard = () => {
               data.resumeSkills?.Skills?.split(",").map((skill) =>
                 skill.trim()
               ) || [], // Ensures skills are stored as an array
-            experiences: data.resumeExperience || [],
+            experiences: data.experiences || [],
             education: data.resumeEducation || [],
           });
 
@@ -94,9 +95,11 @@ const Dashboard = () => {
             (data.resumeExperience || [])
               .map(
                 (exp) =>
-                  `<strong>${exp.companyName || ""} (${exp.startDate || ""} - ${
-                    exp.endDate || ""
-                  }): ${exp.occupation || ""}</strong><ul>${(exp.summary || "")
+                  `<strong>${exp?.CompanyName || exp.companyName || ""} (${
+                    exp?.StartDate || exp.startDate || ""
+                  } - ${exp.EndDate || exp.endDate || "Present"}): ${
+                    exp?.RoleTitle || exp.occupation || ""
+                  }</strong><ul>${(exp?.ExperienceSummary || exp.summary || "")
                     .split("\n")
                     .map((point) => `<li>${point}</li>`)
                     .join("")}</ul>`
@@ -231,18 +234,25 @@ const Dashboard = () => {
           .join("")}</ul>`;
         break;
       case 3:
-        newContent = (resumeData.experiences || [])
+        newContent = resumeData.experiences
           .map(
             (exp) =>
-              `<strong>${exp.companyName || ""} (${exp.startDate || ""} - ${
-                exp.endDate || ""
-              }): ${exp.occupation || ""}</strong><ul>${(exp.summary || "")
+              `<strong>${exp.CompanyName || exp.companyName || ""} (${
+                exp.StartDate || exp.startDate || ""
+              } - ${
+                exp.currentlyWorking ? "Present" : exp.endDate || "Present"
+              }): ${exp.RoleTitle || exp.occupation || ""}</strong><ul>${(
+                exp.ExperienceSummary ||
+                exp.summary ||
+                ""
+              )
                 .split("\n")
                 .map((point) => `<li>${point}</li>`)
                 .join("")}</ul>`
           )
           .join("");
         break;
+
       case 4: // EducationStep
         newContent = (resumeData.education || [])
           .map(

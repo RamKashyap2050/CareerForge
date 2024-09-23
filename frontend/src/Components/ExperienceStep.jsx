@@ -21,6 +21,7 @@ const ExperienceStep = ({
   onNext,
   onBack,
 }) => {
+  console.log("Experiences are", experiences);
   const [newExperience, setNewExperience] = useState({
     companyName: "",
     startDate: "",
@@ -42,23 +43,45 @@ const ExperienceStep = ({
     setNewExperience((prevExperience) => ({
       ...prevExperience,
       currentlyWorking: !prevExperience.currentlyWorking,
-      endDate: prevExperience.currentlyWorking ? prevExperience.endDate : "", // Clear end date if currently working
+      endDate: prevExperience.currentlyWorking
+        ? "Present"
+        : prevExperience.endDate, // Clear end date if currently working
     }));
   };
 
-  const handleAddExperience = () => {
-    setResumeData({
-      ...resumeData,
-      experiences: [...resumeData.experiences, newExperience],
-    });
-    setNewExperience({
-      companyName: "",
-      startDate: "",
-      endDate: "",
-      occupation: "",
-      summary: "",
-      currentlyWorking: false,
-    });
+  const handleAddExperience = async () => {
+    try {
+      const savedResumeId = JSON.parse(localStorage.getItem("resumeId"));
+      console.log("New Experience in Experience Step", newExperience);
+      const response = await axios.put(
+        "/resume/resume-experience",
+        {
+          resumeId: savedResumeId, // Pass the resume ID if it's available
+          experience: newExperience, // Pass the new experience data
+        },
+        { withCredentials: true } // Ensure cookies are sent
+      );
+
+      // Update frontend data with the new or updated experience
+      setResumeData({
+        ...resumeData,
+        experiences: [...resumeData.experiences, newExperience],
+      });
+
+      // Clear form fields
+      setNewExperience({
+        companyName: "",
+        startDate: "",
+        endDate: "",
+        occupation: "",
+        summary: "",
+        currentlyWorking: false,
+      });
+
+      console.log("Response:", response.data.message);
+    } catch (error) {
+      console.error("Error adding experience:", error);
+    }
   };
 
   const handleSearch = async (e) => {
@@ -229,24 +252,60 @@ const ExperienceStep = ({
           <Typography variant="h5" gutterBottom>
             Experience Summary
           </Typography>
+
           <List style={{ maxHeight: "200px", overflow: "auto" }}>
-            {experiences.map((experience, index) => (
-              <ListItem key={index}>
-                <ListItemText
-                  primary={`${experience.companyName} - ${
-                    experience.occupation
-                  } (${experience.startDate} - ${
-                    experience.currentlyWorking ? "Present" : experience.endDate
-                  })`}
-                  secondary={experience.summary}
-                />
-              </ListItem>
-            ))}
-            {newExperience.companyName && (
+            {/* Check if experiences is an array */}
+            {Array.isArray(experiences) && experiences.length > 0
+              ? experiences.map((experience, index) => (
+                  <ListItem key={index}>
+                    <ListItemText
+                      primary={`${
+                        experience.companyName || experience.CompanyName
+                      } - ${
+                        experience.RoleTitle || experience.occupation
+                      } (${new Date(
+                        experience.startDate || experience.StartDate
+                      ).toLocaleDateString()} - ${
+                        experience.endDate === null ||
+                        experience.EndDate === null
+                          ? "Present"
+                          : new Date(experience.endDate).toLocaleDateString()
+                      })`}
+                      secondary={
+                        experience.summary || experience.ExperienceSummary
+                      }
+                    />
+                  </ListItem>
+                ))
+              : // Handle case where experiences is a single object
+                experiences && (
+                  <ListItem>
+                    <ListItemText
+                      primary={`${
+                        experiences.companyName || experiences.CompanyName
+                      } - ${
+                        experiences.occupation || experiences.RoleTitle
+                      } (${new Date(
+                        experiences.startDate || experiences.StartDate
+                      ).toLocaleDateString()} - ${
+                        experiences.endDate === null ||
+                        experiences.EndDate === null
+                          ? "Present"
+                          : new Date(experiences.endDate).toLocaleDateString()
+                      })`}
+                      secondary={
+                        experiences.summary || experiences.ExperienceSummary
+                      }
+                    />
+                  </ListItem>
+                )}
+
+            {/* For the new experience being added */}
+            {newExperience.CompanyName && (
               <ListItem>
                 <ListItemText
-                  primary={`${newExperience.companyName} - ${
-                    newExperience.occupation
+                  primary={`${newExperience.CompanyName} - ${
+                    newExperience.RoleTitle
                   } (${newExperience.startDate} - ${
                     newExperience.currentlyWorking
                       ? "Present"
@@ -257,6 +316,7 @@ const ExperienceStep = ({
               </ListItem>
             )}
           </List>
+
           <Box display="flex" justifyContent="space-between" marginTop="20px">
             <Button
               variant="contained"

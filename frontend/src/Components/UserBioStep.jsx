@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Grid, TextField, Button, MenuItem, Box } from "@mui/material";
 import axios from "axios";
 import {
@@ -25,6 +25,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
     libraries: libraries,
   });
+  const [locationInput, setLocationInput] = useState(bio.location || "");
 
   useEffect(() => {
     // If in edit mode and bio already has data, ensure it is populated correctly
@@ -37,13 +38,25 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
     const places = inputref.current.getPlaces();
     if (places && places.length > 0) {
       const address = places[0].formatted_address;
+      setLocationInput(address); // Set location input with selected place from Google autocomplete
       onBioChange({
         target: {
           name: "location",
-          value: address, // Set location field
+          value: address,
         },
       });
     }
+  };
+
+  const handleLocationInputChange = (e) => {
+    const value = e.target.value;
+    setLocationInput(value); // Allow manual typing in the location input
+    onBioChange({
+      target: {
+        name: "location",
+        value: value, // Update the location in the parent state
+      },
+    });
   };
 
   const handleSubmit = async () => {
@@ -57,8 +70,8 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
         "/resume/resume-bio",
         {
           resumeId: savedResumeId || null, // Send resumeId if it exists, otherwise send null for creation
-          firstName: bio.firstName,
-          lastName: bio.lastName,
+          firstName: bio.firstName, // Use camelCase
+          lastName: bio.lastName, // Use camelCase
           countryCode: bio.countryCode,
           phoneNumber: bio.phoneNumber,
           email: bio.email,
@@ -97,7 +110,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
             fullWidth
             label="First Name"
             name="firstName"
-            value={bio.FirstName || ""} // Default to empty string if no data
+            value={bio.firstName || ""} // Use camelCase and default to empty string if no data
             onChange={onBioChange}
             variant="outlined"
           />
@@ -107,7 +120,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
             fullWidth
             label="Last Name"
             name="lastName"
-            value={bio.LastName || ""} // Default to empty string if no data
+            value={bio.lastName || ""} // Use camelCase and default to empty string if no data
             onChange={onBioChange}
             variant="outlined"
           />
@@ -137,7 +150,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
                 fullWidth
                 label="Phone Number"
                 name="phoneNumber"
-                value={bio.PhoneNumber || ""} // Default to empty string if no data
+                value={bio.phoneNumber || ""} // Use camelCase
                 onChange={onBioChange}
                 variant="outlined"
               />
@@ -150,7 +163,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
             fullWidth
             label="Email"
             name="email"
-            value={bio.Email || ""} // Default to empty string if no data
+            value={bio.email || ""} // Use camelCase
             onChange={onBioChange}
             variant="outlined"
           />
@@ -161,7 +174,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
             fullWidth
             label="LinkedIn Profile"
             name="linkedinProfile"
-            value={bio.LinkedInLink || ""} // Default to empty string if no data
+            value={bio.linkedinProfile || ""} // Use camelCase
             onChange={onBioChange}
             variant="outlined"
           />
@@ -172,7 +185,7 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
             fullWidth
             label="GitHub Link"
             name="githubLink"
-            value={bio.GithubLink || ""} // Default to empty string if no data
+            value={bio.githubLink || ""} // Use camelCase
             onChange={onBioChange}
             variant="outlined"
           />
@@ -183,13 +196,13 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
             fullWidth
             label="Website Link"
             name="websiteLink"
-            value={bio.WebsiteLink || ""} // Default to empty string if no data
+            value={bio.websiteLink || ""} // Use camelCase
             onChange={onBioChange}
             variant="outlined"
           />
         </Grid>
 
-        {/* Location field using Google Places Autocomplete */}
+        {/* Location Field using Google Places Autocomplete */}
         <Grid item xs={12}>
           {isLoaded && (
             <StandaloneSearchBox
@@ -201,8 +214,8 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
                 label="Location"
                 variant="outlined"
                 placeholder="Start typing your address"
-                value={bio.Location || ""} // Ensure location is populated correctly
-                onChange={onBioChange} // Optional manual change handler
+                value={locationInput} // Bind input value to state
+                onChange={handleLocationInputChange} // Allow manual input changes
                 inputProps={{
                   style: {
                     padding: "12px",

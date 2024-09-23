@@ -6,6 +6,50 @@ const ResumeSkills = require("../models/ResumeSkill");
 const ResumeExperience = require("../models/ResumeExperience");
 const ResumeEducation = require("../models/ResumeEducation");
 const ResumeExtraSection = require("../models/ResumeExtraSection");
+const getDraftUserSingleResume = expressAsyncHandler(async (req, res) => {
+  const resumeId = req.params.resumeId;
+
+  if (!req.user || !req.user.id) {
+    return res.status(400).json({ message: "User not authenticated" });
+  }
+
+  try {
+    // Fetch the resume without relying on associations
+    const draftsingleresume = await Resume.findOne({
+      where: { id: resumeId },
+      include: [
+        { model: ResumeBio, as: "resumeBio" },
+        { model: ResumeSummary, as: "resumeSummary" },
+        { model: ResumeSkills, as: "resumeSkills" },
+        { model: ResumeEducation, as: "resumeEducation" },
+        { model: ResumeExtraSection, as: "resumeExtraSection" },
+      ],
+    });
+
+    if (!draftsingleresume) {
+      return res.status(404).json({ message: "Resume not found" });
+    }
+
+    // Manually fetch experiences related to this resume
+    const resumeExperiences = await ResumeExperience.findAll({
+      where: { ResumeId: resumeId },
+    });
+
+    // Convert ResumeExperience instances to plain objects
+    const plainExperiences = resumeExperiences.map((experience) =>
+      experience.toJSON()
+    );
+
+    // Attach experiences manually to the response
+    res.status(200).json({
+      ...draftsingleresume.toJSON(),
+      experiences: plainExperiences, // Use plain objects
+    });
+  } catch (error) {
+    console.error("Error fetching resume:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 const getUserDraftResumes = expressAsyncHandler(async (req, res) => {
   if (!req.user || !req.user.id) {
@@ -36,36 +80,57 @@ const getUserDraftResumes = expressAsyncHandler(async (req, res) => {
   }
 });
 
-const getDraftUserSingleResume = expressAsyncHandler(async (req, res) => {
-  const resumeId = req.params.resumeId;
-
+const updateResumeExperience = expressAsyncHandler(async (req, res) => {
+  const { resumeId, experience } = req.body;
+  console.log(resumeId, experience);
   if (!req.user || !req.user.id) {
     return res.status(400).json({ message: "User not authenticated" });
   }
 
-  console.log("I am resume ID", resumeId);
-
   try {
-    const draftsingleresume = await Resume.findOne({
-      where: { id: resumeId },
-      include: [
-        { model: ResumeBio, as: "resumeBio" },
-        { model: ResumeSummary, as: "resumeSummary" },
-        { model: ResumeSkills, as: "resumeSkills" },
-        { model: ResumeExperience, as: "resumeExperience" },
-        { model: ResumeEducation, as: "resumeEducation" },
-        { model: ResumeExtraSection, as: "resumeExtraSection" },
-      ],
+    let resumeExperience;
+
+    // Check if we are updating or creating a new experience
+    // if (experienceId) {
+    //   resumeExperience = await ResumeExperience.findOne({
+    //     where: { ResumeId: resumeId, User: req.user.id },
+    //   });
+
+    //   if (!resumeExperience) {
+    //     return res.status(404).json({ message: "Experience not found" });
+    //   }
+
+    //   // Update the experience
+    //   await resumeExperience.update({
+    //     CompanyName: experience.companyName,
+    //     RoleTitle: experience.occupation,
+    //     StartDate: experience.startDate,
+    //     EndDate: experience.endDate,
+    //     ExperienceSummary: experience.summary,
+    //   });
+
+    //   res.status(200).json({ message: "Experience updated successfully" });
+    // } else {
+    // Create a new experience
+    const endDate = experience.endDate === "" ? null : experience.endDate;
+    resumeExperience = await ResumeExperience.create({
+      ResumeId: resumeId,
+      User: req.user.id,
+      CompanyName: experience.companyName,
+      RoleTitle: experience.occupation,
+      StartDate: experience.startDate,
+      EndDate: endDate,
+      ExperienceSummary: experience.summary,
     });
 
-    if (!draftsingleresume) {
-      return res.status(404).json({ message: "Resume not found" });
-    }
-
-    res.status(200).json(draftsingleresume);
+    res.status(201).json({
+      message: "Experience created successfully",
+      experienceId: resumeExperience.id,
+    });
+    // }
   } catch (error) {
-    console.error("Error fetching resume:", error);
-    res.status(500).json({ message: "Server error" }); // Send error response
+    console.error("Error updating or creating experience:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -260,4 +325,5 @@ module.exports = {
   getUserDraftResumes,
   getDraftUserSingleResume,
   updateResumeSkills,
+  updateResumeExperience,
 };

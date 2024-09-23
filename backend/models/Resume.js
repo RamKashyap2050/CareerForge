@@ -85,12 +85,31 @@ const Resume = sequelize.define(
 );
 
 Resume.belongsTo(ResumeBio, { foreignKey: "ResumeBio", as: "resumeBio" });
-Resume.belongsTo(ResumeSummary, { foreignKey: "ResumeSummary", as: "resumeSummary" });
-Resume.belongsTo(ResumeSkills, { foreignKey: "ResumeSkills", as: "resumeSkills" });
-Resume.belongsTo(ResumeExperience, { foreignKey: "ResumeExperience", as: "resumeExperience" });
-Resume.belongsTo(ResumeEducation, { foreignKey: "ResumeEducation", as: "resumeEducation" });
-Resume.belongsTo(ResumeExtraSection, { foreignKey: "ResumeExtraSection", as: "resumeExtraSection" });
+Resume.belongsTo(ResumeSummary, {
+  foreignKey: "ResumeSummary",
+  as: "resumeSummary",
+});
+Resume.belongsTo(ResumeSkills, {
+  foreignKey: "ResumeSkills",
+  as: "resumeSkills",
+});
+Resume.belongsTo(ResumeExperience, {
+  foreignKey: "ResumeExperience",
+  as: "resumeExperience",
+});
+Resume.hasMany(ResumeExperience, {
+  foreignKey: "ResumeId",
+  as: "resumeExperiences",
+});
 
+Resume.belongsTo(ResumeEducation, {
+  foreignKey: "ResumeEducation",
+  as: "resumeEducation",
+});
+Resume.belongsTo(ResumeExtraSection, {
+  foreignKey: "ResumeExtraSection",
+  as: "resumeExtraSection",
+});
 
 sequelize
   .sync()
