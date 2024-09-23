@@ -23,7 +23,7 @@ const ResumeExperience = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false, // Link to a specific resume
       references: {
-        model: "Resume",
+        model: "Resumes",
         key: "id",
       },
     },
@@ -53,8 +53,6 @@ const ResumeExperience = sequelize.define(
     tableName: "ResumeExperience",
   }
 );
-
-
 
 sequelize
   .sync()

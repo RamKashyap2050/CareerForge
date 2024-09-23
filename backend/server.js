@@ -100,7 +100,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 sequelize
-  .sync()
+  .sync({ alter: true })
   .then(() => {
     console.log("Database synced successfully.");
     const PORT = process.env.PORT || 5000;
