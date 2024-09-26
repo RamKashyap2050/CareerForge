@@ -106,6 +106,10 @@ Resume.belongsTo(ResumeEducation, {
   foreignKey: "ResumeEducation",
   as: "resumeEducation",
 });
+Resume.hasMany(ResumeEducation, {
+  foreignKey: "ResumeId",
+  as: "resumeEducations",
+});
 Resume.belongsTo(ResumeExtraSection, {
   foreignKey: "ResumeExtraSection",
   as: "resumeExtraSection",

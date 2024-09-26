@@ -705,7 +705,7 @@ const Dashboard = () => {
       };
 
       drawText(
-        `${resumeData.bio.firstName} ${resumeData.bio.lastName}`,
+        `${resumeData.bio.FirstName} ${resumeData.bio.LastName}`,
         boldFont,
         fontSize,
         {
@@ -714,16 +714,16 @@ const Dashboard = () => {
       );
       parseHtmlAndDraw(
         parseHtml(
-          `<p>Phone: ${resumeData.bio.phoneNumber} | Email: ${resumeData.bio.email}</p>`
+          `<p>Phone: ${resumeData.bio.PhoneNumber} | Email: ${resumeData.bio.Email}</p>`
         )
       );
       parseHtmlAndDraw(
         parseHtml(
-          `<p>LinkedIn: ${resumeData.bio.linkedinProfile} | GitHub: ${resumeData.bio.githubLink}| Website: ${resumeData.bio.websiteLink} </p>`
+          `<p>LinkedIn: ${resumeData.bio.LinkedInLink} | GitHub: ${resumeData.bio.GithubLink}| Website: ${resumeData.bio.WebsiteLink} </p>`
         )
       );
       parseHtmlAndDraw(
-        parseHtml(`<p>Location: ${resumeData.bio.location}</p>`)
+        parseHtml(`<p>Location: ${resumeData.bio.Location}</p>`)
       );
 
       drawSeparator();
@@ -753,13 +753,21 @@ const Dashboard = () => {
 
       // Experience Section
       drawText("Experience:", boldFont, fontSize, { align: "center" });
+
       resumeData.experiences.forEach((exp) => {
+        const formattedStartDate = exp.StartDate
+          ? format(new Date(exp.StartDate), "MMMM yyyy")
+          : " ";
+        const formattedEndDate = exp.EndDate
+          ? format(new Date(exp.EndDate), "MMMM yyyy")
+          : "Present";
+
         parseHtmlAndDraw(
           parseHtml(
-            `<p>${exp.companyName} (${exp.startDate} - ${exp.endDate}): ${exp.occupation}</p>`
+            `<p>${exp.CompanyName} (${formattedStartDate} - ${formattedEndDate}): ${exp.RoleTitle}</p>`
           )
         );
-        parseHtmlAndDraw(parseHtml(exp.summary));
+        parseHtmlAndDraw(parseHtml(exp.ExperienceSummary));
         yPosition -= 8;
       });
 
@@ -784,7 +792,9 @@ const Dashboard = () => {
       const blob = new Blob([pdfBytes], { type: "application/pdf" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = "resume.pdf";
+      link.download = `${
+        resumeData.bio.LastName || resumeData.bio.lastName
+      }.pdf`;
       link.click();
     } catch (error) {
       console.error("Error generating PDF:", error);

@@ -18,14 +18,22 @@ const ResumeEducation = sequelize.define(
       },
       onDelete: "CASCADE",
     },
+    ResumeId: {
+      type: DataTypes.INTEGER,
+      allowNull: false, // Link to a specific resume
+      references: {
+        model: "Resumes",
+        key: "id",
+      },
+    },
     InstitueName: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     DegreeType: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     StartDate: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -35,8 +43,8 @@ const ResumeEducation = sequelize.define(
       allowNull: false,
     },
     EducationSummary: {
-      type: DataTypes.TEXT, 
-      allowNull: true, 
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
   },
   {

@@ -12,6 +12,8 @@ import {
   Checkbox,
   FormControlLabel,
 } from "@mui/material";
+import { IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 
 const ExperienceStep = ({
@@ -85,7 +87,7 @@ const ExperienceStep = ({
   };
 
   const handleSearch = async (e) => {
-    const value = e.target.value.trim();
+    const value = e.target.value;
     setSearchTerm(value);
 
     if (value.length > 2) {
@@ -252,71 +254,125 @@ const ExperienceStep = ({
           <Typography variant="h5" gutterBottom>
             Experience Summary
           </Typography>
-
           <List style={{ maxHeight: "200px", overflow: "auto" }}>
             {/* Check if experiences is an array */}
             {Array.isArray(experiences) && experiences.length > 0
               ? experiences.map((experience, index) => (
-                  <ListItem key={index}>
+                  <ListItem
+                    key={index}
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={() => handleDeleteExperience(experience.id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    }
+                  >
                     <ListItemText
                       primary={`${
-                        experience.companyName || experience.CompanyName
+                        experience.companyName || experience.CompanyName || ""
                       } - ${
-                        experience.RoleTitle || experience.occupation
-                      } (${new Date(
+                        experience.RoleTitle || experience.occupation || ""
+                      } (${
                         experience.startDate || experience.StartDate
-                      ).toLocaleDateString()} - ${
+                          ? new Date(
+                              experience.startDate || experience.StartDate
+                            ).toLocaleDateString()
+                          : " "
+                      } - ${
                         experience.endDate === null ||
                         experience.EndDate === null
                           ? "Present"
-                          : new Date(experience.endDate).toLocaleDateString()
+                          : experience.endDate
+                          ? new Date(experience.endDate).toLocaleDateString()
+                          : "Present"
                       })`}
                       secondary={
-                        experience.summary || experience.ExperienceSummary
+                        experience.summary ||
+                        experience.ExperienceSummary ||
+                        " "
                       }
                     />
                   </ListItem>
                 ))
               : // Handle case where experiences is a single object
                 experiences && (
-                  <ListItem>
+                  <ListItem
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        aria-label="delete"
+                        onClick={() => handleDeleteExperience(experiences.id)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    }
+                  >
                     <ListItemText
                       primary={`${
-                        experiences.companyName || experiences.CompanyName
+                        experiences.companyName ||
+                        experiences.CompanyName ||
+                        " "
                       } - ${
-                        experiences.occupation || experiences.RoleTitle
-                      } (${new Date(
+                        experiences.occupation || experiences.RoleTitle || " "
+                      } (${
                         experiences.startDate || experiences.StartDate
-                      ).toLocaleDateString()} - ${
+                          ? new Date(
+                              experiences.startDate || experiences.StartDate
+                            ).toLocaleDateString()
+                          : " "
+                      } - ${
                         experiences.endDate === null ||
                         experiences.EndDate === null
                           ? "Present"
-                          : new Date(experiences.endDate).toLocaleDateString()
+                          : experiences.endDate
+                          ? new Date(experiences.endDate).toLocaleDateString()
+                          : " "
                       })`}
                       secondary={
-                        experiences.summary || experiences.ExperienceSummary
+                        experiences.summary ||
+                        experiences.ExperienceSummary ||
+                        " "
                       }
                     />
                   </ListItem>
                 )}
 
+            {/* If there are no experiences at all */}
+            {(!experiences || experiences.length === 0) && (
+              <ListItem>
+                <ListItemText primary="No experience available" />
+              </ListItem>
+            )}
+
             {/* For the new experience being added */}
             {newExperience.CompanyName && (
-              <ListItem>
+              <ListItem
+                secondaryAction={
+                  <IconButton
+                    edge="end"
+                    aria-label="delete"
+                    onClick={() => handleDeleteExperience(newExperience.id)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                }
+              >
                 <ListItemText
-                  primary={`${newExperience.CompanyName} - ${
-                    newExperience.RoleTitle
-                  } (${newExperience.startDate} - ${
-                    newExperience.currentlyWorking
+                  primary={`${newExperience.CompanyName || " "} - ${
+                    newExperience.RoleTitle || " "
+                  } (${newExperience.startDate || " "} - ${
+                    newExperience.currentlyWorking || " "
                       ? "Present"
                       : newExperience.endDate
                   })`}
-                  secondary={newExperience.summary}
+                  secondary={newExperience.summary || ""}
                 />
               </ListItem>
             )}
           </List>
-
           <Box display="flex" justifyContent="space-between" marginTop="20px">
             <Button
               variant="contained"
