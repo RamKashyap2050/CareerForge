@@ -21,7 +21,6 @@ const getDraftUserSingleResume = expressAsyncHandler(async (req, res) => {
         { model: ResumeBio, as: "resumeBio" },
         { model: ResumeSummary, as: "resumeSummary" },
         { model: ResumeSkills, as: "resumeSkills" },
-        { model: ResumeEducation, as: "resumeEducation" },
         { model: ResumeExtraSection, as: "resumeExtraSection" },
       ],
     });
@@ -35,21 +34,31 @@ const getDraftUserSingleResume = expressAsyncHandler(async (req, res) => {
       where: { ResumeId: resumeId },
     });
 
-    // Convert ResumeExperience instances to plain objects
+    // Manually fetch education related to this resume
+    const resumeEducation = await ResumeEducation.findAll({
+      where: { ResumeId: resumeId },
+    });
+
+    // Convert ResumeExperience and ResumeEducation instances to plain objects
     const plainExperiences = resumeExperiences.map((experience) =>
       experience.toJSON()
     );
+    const plainEducation = resumeEducation.map((education) =>
+      education.toJSON()
+    );
 
-    // Attach experiences manually to the response
+    // Attach experiences and education manually to the response
     res.status(200).json({
       ...draftsingleresume.toJSON(),
-      experiences: plainExperiences, // Use plain objects
+      experiences: plainExperiences, // Use plain objects for experiences
+      education: plainEducation, // Use plain objects for education
     });
   } catch (error) {
     console.error("Error fetching resume:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 const getUserDraftResumes = expressAsyncHandler(async (req, res) => {
   if (!req.user || !req.user.id) {
@@ -89,28 +98,6 @@ const updateResumeExperience = expressAsyncHandler(async (req, res) => {
 
   try {
     let resumeExperience;
-
-    // Check if we are updating or creating a new experience
-    // if (experienceId) {
-    //   resumeExperience = await ResumeExperience.findOne({
-    //     where: { ResumeId: resumeId, User: req.user.id },
-    //   });
-
-    //   if (!resumeExperience) {
-    //     return res.status(404).json({ message: "Experience not found" });
-    //   }
-
-    //   // Update the experience
-    //   await resumeExperience.update({
-    //     CompanyName: experience.companyName,
-    //     RoleTitle: experience.occupation,
-    //     StartDate: experience.startDate,
-    //     EndDate: experience.endDate,
-    //     ExperienceSummary: experience.summary,
-    //   });
-
-    //   res.status(200).json({ message: "Experience updated successfully" });
-    // } else {
     // Create a new experience
     const endDate = experience.endDate === "" ? null : experience.endDate;
     resumeExperience = await ResumeExperience.create({
@@ -319,6 +306,56 @@ const updateResumeSkills = expressAsyncHandler(async (req, res) => {
   }
 });
 
+//Delete a Single Experience
+const deleteresumeexperience = expressAsyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const experience = await ResumeExperience.destroy({
+      where: { id },
+    });
+    if (!experience) {
+      return res.status(404).json({ message: "Experience not found" });
+    }
+
+    res.status(200).json({ message: "Experience deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting experience:", error);
+    res.status(500).json({ message: "Failed to delete experience" });
+  }
+});
+
+//Add Resume Education
+const updateResumeEducation = expressAsyncHandler(async (req, res) => {
+  const { resumeId, education } = req.body;
+  console.log(resumeId, education);
+
+  if (!req.user || !req.user.id) {
+    return res.status(400).json({ message: "User not authenticated" });
+  }
+
+  try {
+    let resumeEducation;
+    const endDate = education.endDate === "" ? null : education.endDate;
+    resumeEducation = await ResumeEducation.create({
+      ResumeId: resumeId,
+      User: req.user.id,
+      InstitueName: education.instituteName,
+      DegreeType: education.degreeType,
+      StartDate: education.startDate,
+      EndDate: endDate,
+      EducationSummary: education.gradesAchievements,
+    });
+    res.status(201).json({
+      message: "Education created successfully",
+      educationId: resumeEducation.id,
+    });
+  } catch (error) {
+    console.error("Error updating or creating education:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = {
   createOrUpdateResumeBio,
   updateResumeSummary,
@@ -326,4 +363,6 @@ module.exports = {
   getDraftUserSingleResume,
   updateResumeSkills,
   updateResumeExperience,
+  deleteresumeexperience,
+  updateResumeEducation,
 };

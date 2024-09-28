@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import Quill styles
-
+import axios from "axios";
 const degreeOptions = [
   "AEC",
   "DEC",
@@ -83,10 +83,24 @@ const EducationStep = ({ education, setEducation, onNext, onBack }) => {
     }
   };
 
-  const handleAddEducation = (e) => {
-    e.preventDefault();
+  const handleAddEducation = async () => {
     try {
+      const savedResumeId = JSON.parse(localStorage.getItem("resumeId"));
+      console.log("New Education in Education Step", newEducation);
+
+      const response = await axios.put(
+        "/resume/resume-education",
+        {
+          resumeId: savedResumeId, // Pass the resume ID if it's available
+          education: newEducation, // Pass the new education data
+        },
+        { withCredentials: true } // Ensure cookies are sent
+      );
+
+      // Update frontend data with the new or updated education
       setEducation([...education, newEducation]);
+
+      // Clear form fields
       setNewEducation({
         instituteName: "",
         startDate: "",
@@ -95,12 +109,12 @@ const EducationStep = ({ education, setEducation, onNext, onBack }) => {
         degreeType: "",
         gradesAchievements: "",
       });
-      setHasError(false);
-      setErrorMessage("");
+
+      console.log("Response:", response.data.message);
     } catch (error) {
+      console.error("Error adding education:", error);
       setHasError(true);
       setErrorMessage("An error occurred while adding education data.");
-      console.error("Error adding education:", error);
     }
   };
 
@@ -245,13 +259,18 @@ const EducationStep = ({ education, setEducation, onNext, onBack }) => {
               education.map((edu, index) => (
                 <ListItem key={index}>
                   <ListItemText
-                    primary={`${edu.instituteName} - ${edu.degreeType} (${
-                      edu.startDate
-                    } - ${edu.currentlyEnrolled ? "Present" : edu.endDate})`}
+                    primary={`${edu.instituteName || edu.InstitueName} - ${
+                      edu.degreeType || edu.DegreeType
+                    } (${edu.startDate || edu.StartDate} - ${
+                      edu.currentlyEnrolled
+                        ? "Present"
+                        : edu.endDate || edu.EndDate
+                    })`}
                     secondary={
                       <div
                         dangerouslySetInnerHTML={{
-                          __html: edu.gradesAchievements,
+                          __html:
+                            edu.gradesAchievements || edu.EducationSummary,
                         }}
                       />
                     }

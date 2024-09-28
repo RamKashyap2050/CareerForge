@@ -35,7 +35,23 @@ const ExperienceStep = ({
 
   const [suggestedDuties, setSuggestedDuties] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const handleDeleteExperience = async (id) => {
+    try {
+      const updatedExperiences = experiences.filter((exp) => exp.id !== id);
 
+      setNewExperience(updatedExperiences);
+
+      const response = await axios.delete(`/resume/deleteresumeexperience/${id}`);
+
+      console.log("Deleted successfully:", response.data);
+    } catch (error) {
+      console.error("Error deleting experience:", error);
+      setNewExperience((prevExperiences) => [
+        ...prevExperiences,
+        experiences.find((exp) => exp.id === id),
+      ]);
+    }
+  };
   const handleExperienceChange = (e) => {
     const { name, value } = e.target;
     setNewExperience({ ...newExperience, [name]: value });

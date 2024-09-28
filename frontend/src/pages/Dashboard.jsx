@@ -48,7 +48,14 @@ const Dashboard = () => {
   const [resumeId, setResumeId] = useState(null); // Track the selected resume ID
   const [loading, setLoading] = useState(false); // For handling loading state
   const [isStepInitialized, setIsStepInitialized] = useState(false);
-
+  const [isCompleted, setisCompleted] = useState(false);
+  // UseEffect to clean up localStorage when the component unmounts
+  useEffect(() => {
+    return () => {
+      // Clear resumeId from localStorage when the component unmounts or reloads
+      localStorage.removeItem("resumeId");
+    };
+  }, []); // This runs only when the component unmounts
   // useEffect that only runs when a resume is selected for editing
   useEffect(() => {
     if (isEditing && resumeId) {
@@ -70,7 +77,7 @@ const Dashboard = () => {
                 skill.trim()
               ) || [], // Ensures skills are stored as an array
             experiences: data.experiences || [],
-            education: data.resumeEducation || [],
+            education: data.education || [],
           });
 
           // Initialize paper content based on the fetched resume data
@@ -107,7 +114,7 @@ const Dashboard = () => {
               .join(""),
 
             // Education section
-            (data.resumeEducation || [])
+            (data.education || [])
               .map(
                 (edu) =>
                   `${edu.instituteName || ""} - ${edu.degreeType || ""} (${
@@ -126,7 +133,10 @@ const Dashboard = () => {
           if (!isStepInitialized) {
             if (data.resumeEducation) {
               setCurrentStep(4);
-            } else if (data.resumeExperience?.length > 0) {
+            } else if (
+              data.resumeExperience?.length > 0 ||
+              data.experiences?.length > 0
+            ) {
               setCurrentStep(3);
             } else if (data.resumeSkills?.Skills?.length > 0) {
               setCurrentStep(2);
@@ -257,11 +267,13 @@ const Dashboard = () => {
         newContent = (resumeData.education || [])
           .map(
             (edu) =>
-              `${edu.instituteName || ""} - ${edu.degreeType || ""} (${
-                edu.startDate || ""
-              } - ${edu.currentlyEnrolled ? "Present" : edu.endDate || ""}): ${
-                edu.gradesAchievements || ""
-              }`
+              `${edu.instituteName || edu.InstitueName || ""} - ${
+                edu.degreeType || edu.DegreeType || ""
+              } (${edu.startDate || edu.StartDate || ""} - ${
+                edu.currentlyEnrolled
+                  ? "Present"
+                  : edu.endDate || edu.EndDate || ""
+              }): ${edu.gradesAchievements || edu.EducationSummary || ""}`
           )
           .join(", ");
         break;
@@ -755,19 +767,33 @@ const Dashboard = () => {
       drawText("Experience:", boldFont, fontSize, { align: "center" });
 
       resumeData.experiences.forEach((exp) => {
-        const formattedStartDate = exp.StartDate
-          ? format(new Date(exp.StartDate), "MMMM yyyy")
-          : " ";
-        const formattedEndDate = exp.EndDate
-          ? format(new Date(exp.EndDate), "MMMM yyyy")
-          : "Present";
+        const formattedStartDate =
+          exp.StartDate || exp.startDate
+            ? format(
+                new Date(exp.StartDate),
+                "MMMM yyyy" || new Date(exp.startDate),
+                "MMMM yyyy"
+              )
+            : " ";
+        const formattedEndDate =
+          exp.EndDate || exp.endDate
+            ? format(
+                new Date(exp.EndDate),
+                "MMMM yyyy" || new Date(exp.endDate),
+                "MMMM yyyy"
+              )
+            : "Present";
 
         parseHtmlAndDraw(
           parseHtml(
-            `<p>${exp.CompanyName} (${formattedStartDate} - ${formattedEndDate}): ${exp.RoleTitle}</p>`
+            `<p>${
+              exp.CompanyName || exp.companyName
+            } (${formattedStartDate} - ${formattedEndDate}): ${
+              exp.RoleTitle || exp.occupation
+            }</p>`
           )
         );
-        parseHtmlAndDraw(parseHtml(exp.ExperienceSummary));
+        parseHtmlAndDraw(parseHtml(exp.ExperienceSummary || exp.summary));
         yPosition -= 8;
       });
 
@@ -776,14 +802,32 @@ const Dashboard = () => {
       // Education Section
       drawText("Education:", boldFont, fontSize, { align: "center" });
       resumeData.education.forEach((edu) => {
+        const formattedStartDate =
+          edu.StartDate || edu.startDate
+            ? format(
+                new Date(edu.StartDate),
+                "MMMM yyyy" || new Date(edu.startDate),
+                "MMMM yyyy"
+              )
+            : " ";
+        const formattedEndDate =
+          edu.EndDate || edu.endDate
+            ? format(
+                new Date(edu.EndDate),
+                "MMMM yyyy" || new Date(edu.endDate),
+                "MMMM yyyy"
+              )
+            : "Present";
         parseHtmlAndDraw(
           parseHtml(
-            `<p>${edu.instituteName} - ${edu.degreeType} (${edu.startDate} - ${
-              edu.currentlyEnrolled ? "Present" : edu.endDate
-            })</p>`
+            `<p>${edu.instituteName || edu.InstitueName} - ${
+              edu.degreeType || edu.DegreeType
+            } (${formattedStartDate} - ${formattedEndDate})</p>`
           )
         );
-        parseHtmlAndDraw(parseHtml(edu.gradesAchievements));
+        parseHtmlAndDraw(
+          parseHtml(edu.gradesAchievements || edu.EducationSummary)
+        );
         yPosition -= 8;
       });
 
@@ -802,6 +846,9 @@ const Dashboard = () => {
         "There was an error generating the PDF. Please check your data and try again."
       );
     }
+  };
+  const handleCompleted = () => {
+    console.log("Handle Completed");
   };
 
   if (loading) {
@@ -928,6 +975,18 @@ const Dashboard = () => {
                   >
                     Back
                   </Button>
+                  &nbsp;
+                  {isCompleted ? (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={handleCompleted}
+                    >
+                      Mark as Completed
+                    </Button>
+                  ) : (
+                    ""
+                  )}
                 </Box>
               </CardContent>
             </Card>
