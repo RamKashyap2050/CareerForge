@@ -115,6 +115,36 @@ const experienceSuggest = expressAsyncHandler(async (req, res) => {
   }
 });
 
+const SummarySuggest = expressAsyncHandler(async (req, res) => {
+  const { prompt } = req.query;
+  console.log(prompt);
+
+  try {
+    // Introduce a delay of 5 seconds before processing
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const fullPrompt = `You are creating a concise and impactful professional summary for the role of "${prompt}". The summary should:
+1. Highlight key skills, experiences, and accomplishments relevant to this role.
+2. Use clear, professional language without jargon or overly complex terms.
+3. Be between 3 to 5 sentences long, focusing on the value the person brings to the role.
+4. Avoid generic statements or clichés—make the summary feel personalized and results-driven.
+5. Include specific, quantifiable achievements or key areas of expertise where applicable.
+
+The goal is to deliver a strong, professional overview that makes a compelling case for the individual in the role of "${prompt}".
+`;
+
+    const result = await model.generateContent(fullPrompt);
+    const text = await result.response.text();
+    console.log(text);
+    return res.json({ summary: text });
+  } catch (error) {
+    console.error("Error fetching from Gemini API:", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 const logout = expressAsyncHandler((req, res, next) => {
   req.logout(function (err) {
     if (err) {
@@ -141,4 +171,5 @@ module.exports = {
   experienceSuggest,
   logout,
   isAuthenticated,
+  SummarySuggest,
 };

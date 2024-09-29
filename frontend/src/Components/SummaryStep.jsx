@@ -1,33 +1,62 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Grid } from "@mui/material";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // import styles for Quill
 import axios from "axios";
+import MagicIcon from "@mui/icons-material/AutoAwesome"; // Magic symbol icon from MUI
+
 const SummaryStep = ({ summary, onSummaryChange, onNext }) => {
+  const [loadingAI, setLoadingAI] = useState(false); // For AI loading state
+
   const handleSummaryChange = (value) => {
     onSummaryChange({ target: { value } }); // 'value' is the HTML content from Quill
+  };
+
+  // Handle AI content generation
+  const handleAIClick = async () => {
+    const value = summary || "Write a professional summary."; // Default summary prompt
+    setLoadingAI(true); // Show loading indicator
+
+    try {
+      // Making the API request to fetch AI-generated content
+      const response = await axios.get(`/users/getsummary`, {
+        params: { prompt: value }, // Passing the prompt to the backend
+        withCredentials: true, // Ensure cookies are sent for authentication
+      });
+
+      // Process the response from the backend
+      const aiGeneratedContent = response.data.summary || ""; // Assuming the response contains 'generatedSummary'
+
+      console.log("AI Response:", aiGeneratedContent);
+
+      // Update the editor's content with the AI-generated summary
+      handleSummaryChange(aiGeneratedContent); // No need to create a target object
+    } catch (error) {
+      console.error("Error generating summary with AI:", error);
+      alert("There was an error generating the summary. Please try again.");
+    } finally {
+      setLoadingAI(false); // Stop the loading indicator
+    }
   };
 
   const handleSubmit = async () => {
     onNext();
     try {
-      // Fetch resumeId from localStorage if it exists
       const savedResumeId = JSON.parse(localStorage.getItem("resumeId"));
-      console.log(savedResumeId)
-      // Send the PUT request with the resumeId and summary
+      console.log(savedResumeId);
+
       const response = await axios.put(
         "/resume/resume-summary",
         {
-          resumeId: savedResumeId, // Fetch resumeId from localStorage
-          summary, // Send the formatted content as HTML
+          resumeId: savedResumeId,
+          summary,
         },
         {
-          withCredentials: true, // This ensures cookies are sent along with the request (important for session-based auth)
+          withCredentials: true,
         }
       );
 
       console.log("Response from backend:", response.data);
-      // Proceed to the next step
     } catch (error) {
       console.error("Error submitting summary:", error);
       alert("There was an error submitting your summary. Please try again.");
@@ -50,7 +79,22 @@ const SummaryStep = ({ summary, onSummaryChange, onNext }) => {
             {summary.length}/1000 characters
           </p>
         </Grid>
-        <Grid item xs={12}>
+
+        <Grid
+          item
+          xs={12}
+          style={{ display: "flex", justifyContent: "space-between" }}
+        >
+          <Button
+            variant="outlined"
+            color="primary"
+            startIcon={<MagicIcon />} // Add the magic symbol icon
+            onClick={handleAIClick}
+            disabled={loadingAI} // Disable while loading
+          >
+            {loadingAI ? "Generating..." : "Write with AI"}
+          </Button>
+
           <Button
             variant="contained"
             color="primary"
