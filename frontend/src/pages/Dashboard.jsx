@@ -601,95 +601,97 @@ const Dashboard = () => {
 
       const parseHtmlAndDraw = (element) => {
         element.childNodes.forEach((node) => {
+          let currentFont = font;
+          let currentFontSize = fontSize;
+          let color = rgb(0, 0, 0); // Default color
+
+          // Handle Text Nodes (Plain text)
           if (node.nodeType === Node.TEXT_NODE) {
-            drawText(node.textContent, font, fontSize);
-          } else if (node.nodeType === Node.ELEMENT_NODE) {
-            let currentFont = font;
-            let currentFontSize = fontSize;
-            let color = rgb(0, 0, 0);
-            let backgroundColor = null;
+            drawText(node.textContent, currentFont, currentFontSize, { color });
+          }
 
-            if (
-              node.tagName.toLowerCase() === "strong" ||
-              node.style.fontWeight === "bold"
-            ) {
-              currentFont = boldFont;
-            }
-            if (
-              node.tagName.toLowerCase() === "em" ||
-              node.style.fontStyle === "italic"
-            ) {
-              currentFont = italicFont;
-            }
-            if (node.style.color) {
-              const hexColor = node.style.color.replace("#", "");
-              color = rgb(
-                parseInt(hexColor.slice(0, 2), 16) / 255,
-                parseInt(hexColor.slice(2, 4), 16) / 255,
-                parseInt(hexColor.slice(4, 6), 16) / 255
-              );
-            }
-            if (node.style.backgroundColor) {
-              const bgColor = node.style.backgroundColor.replace("#", "");
-              backgroundColor = rgb(
-                parseInt(bgColor.slice(0, 2), 16) / 255,
-                parseInt(bgColor.slice(2, 4), 16) / 255,
-                parseInt(bgColor.slice(4, 6), 16) / 255
-              );
-            }
-
+          // Handle Element Nodes (HTML tags)
+          else if (node.nodeType === Node.ELEMENT_NODE) {
             switch (node.tagName.toLowerCase()) {
-              case "p":
-                if (backgroundColor) {
-                  page.drawRectangle({
-                    x: margin,
-                    y: yPosition - lineHeight,
-                    width: maxWidth,
-                    height: lineHeight + 4,
-                    color: backgroundColor,
-                  });
-                }
+              case "strong": // Bold text
+              console.log("Bold text detected:", node.textContent);
+              currentFont = boldFont;
+              drawText(node.textContent, currentFont, currentFontSize, { color });
+              break;
+            
+              case "em": // Italic text
+                currentFont = italicFont;
                 drawText(node.textContent, currentFont, currentFontSize, {
                   color,
                 });
-                yPosition -= 8;
                 break;
-              case "strong":
-              case "em":
-              case "span":
-                if (backgroundColor) {
-                  page.drawRectangle({
-                    x: margin,
-                    y: yPosition - lineHeight,
-                    width: maxWidth,
-                    height: lineHeight + 4,
-                    color: backgroundColor,
-                  });
+
+              case "span": // Colored or styled span
+                if (node.style.color) {
+                  const hexColor = node.style.color.replace("#", "");
+                  color = rgb(
+                    parseInt(hexColor.slice(0, 2), 16) / 255,
+                    parseInt(hexColor.slice(2, 4), 16) / 255,
+                    parseInt(hexColor.slice(4, 6), 16) / 255
+                  );
                 }
                 drawText(node.textContent, currentFont, currentFontSize, {
                   color,
                 });
                 break;
-              case "br":
+
+              case "br": // Line break
                 yPosition -= lineHeight;
                 break;
-              case "ul":
-              case "ol":
+
+              case "p": // Paragraphs
+                drawText(node.textContent, currentFont, currentFontSize, {
+                  color,
+                });
+                yPosition -= 8; // Add some spacing after the paragraph
+                break;
+
+              case "ul": // Unordered List
                 node.childNodes.forEach((li) => {
                   if (li.tagName.toLowerCase() === "li") {
                     drawText(
                       `• ${li.textContent}`,
                       currentFont,
                       currentFontSize,
-                      { color, x: margin + 10 }
+                      {
+                        color,
+                        x: margin + 10, // Indent the bullet points
+                      }
                     );
-                    yPosition -= 4;
+                    yPosition -= lineHeight;
                   }
                 });
-                yPosition -= 8;
+                yPosition -= 8; // Add spacing after the list
                 break;
+
+              case "ol": // Ordered List
+                let listItemNumber = 1;
+                node.childNodes.forEach((li) => {
+                  if (li.tagName.toLowerCase() === "li") {
+                    drawText(
+                      `${listItemNumber}. ${li.textContent}`,
+                      currentFont,
+                      currentFontSize,
+                      {
+                        color,
+                        x: margin + 10, // Indent the numbered list
+                      }
+                    );
+                    listItemNumber++;
+                    yPosition -= lineHeight;
+                  }
+                });
+                yPosition -= 8; // Add spacing after the list
+                break;
+
               default:
-                parseHtmlAndDraw(node);
+                parseHtmlAndDraw(node); // Handle nested elements recursively
+                break;
             }
           }
         });
@@ -743,18 +745,10 @@ const Dashboard = () => {
       drawText("Professional Summary:", boldFont, fontSize, {
         align: "center",
       });
-      yPosition = parseSummary(
-        resumeData.summary,
-        pdfDoc,
-        page,
-        yPosition,
-        margin,
-        maxWidth,
-        lineHeight,
-        font,
-        boldFont,
-        italicFont
-      );
+
+      // Parse and draw the summary with HTML tags
+      const parsedSummary = parseHtml(resumeData.summary);
+      parseHtmlAndDraw(parsedSummary);
 
       drawSeparator();
 

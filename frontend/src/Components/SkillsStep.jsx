@@ -13,6 +13,7 @@ import {
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import axios from "axios";
+let typingTimer;
 
 const SkillsStep = ({
   skills,
@@ -34,36 +35,47 @@ const SkillsStep = ({
     setEditorContent(formattedSkills);
   }, [skills]);
 
-  const handleSearch = async (e) => {
+  const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
 
+    // Clear the previous timer if the user is still typing
+    clearTimeout(typingTimer);
+
+    // Only make the API call if the input has 3 or more characters
     if (value.length > 2) {
+      // Set loading to true as we are waiting for the API call
       setLoading(true);
-      try {
-        const response = await axios.get(`/users/getskills`, {
-          params: { prompt: value },
-        });
 
-        const skillsString = response.data.skills || "";
-        const skillsArray = skillsString
-          .split("\n")
-          .map((skill) => skill.replace(/^[\*\#\s]*-*\s*/, "").trim())
-          .filter(
-            (skill) =>
-              skill.length > 0 &&
-              !skill.toLowerCase().startsWith("note") &&
-              !skill.toLowerCase().includes("you mean")
-          );
+      // Start a new timer, wait 4 seconds after the user stops typing
+      typingTimer = setTimeout(async () => {
+        try {
+          // Make the API request after the debounce period
+          const response = await axios.get(`/users/getskills`, {
+            params: { prompt: value },
+          });
 
-        setSuggestedSkills(skillsArray);
-      } catch (error) {
-        console.error("Error fetching skills:", error);
-        setSuggestedSkills([]);
-      } finally {
-        setLoading(false);
-      }
+          const skillsString = response.data.skills || "";
+          const skillsArray = skillsString
+            .split("\n")
+            .map((skill) => skill.replace(/^[\*\#\s]*-*\s*/, "").trim())
+            .filter(
+              (skill) =>
+                skill.length > 0 &&
+                !skill.toLowerCase().startsWith("note") &&
+                !skill.toLowerCase().includes("you mean")
+            );
+
+          setSuggestedSkills(skillsArray);
+        } catch (error) {
+          console.error("Error fetching skills:", error);
+          setSuggestedSkills([]);
+        } finally {
+          setLoading(false);
+        }
+      }, 3500); // Delay of 4000 milliseconds (4 seconds)
     } else {
+      // If input has fewer than 3 characters, clear the suggestions
       setSuggestedSkills([]);
     }
   };

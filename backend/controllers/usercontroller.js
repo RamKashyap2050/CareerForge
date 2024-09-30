@@ -77,7 +77,7 @@ const skillsuggest = expressAsyncHandler(async (req, res) => {
 
   try {
     // Introduce a delay of 5 seconds before processing
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    // await new Promise((resolve) => setTimeout(resolve, 5000));
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -99,7 +99,7 @@ const experienceSuggest = expressAsyncHandler(async (req, res) => {
 
   try {
     // Introduce a delay of 5 seconds before processing
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    // await new Promise((resolve) => setTimeout(resolve, 5000));
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });

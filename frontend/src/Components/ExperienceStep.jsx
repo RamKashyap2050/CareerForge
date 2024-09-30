@@ -11,10 +11,12 @@ import {
   Box,
   Checkbox,
   FormControlLabel,
+  CircularProgress,
 } from "@mui/material";
 import { IconButton } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
+let debounceTimer; // Declare a timer variable outside the component
 
 const ExperienceStep = ({
   experiences,
@@ -35,13 +37,17 @@ const ExperienceStep = ({
 
   const [suggestedDuties, setSuggestedDuties] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const handleDeleteExperience = async (id) => {
     try {
       const updatedExperiences = experiences.filter((exp) => exp.id !== id);
 
       setNewExperience(updatedExperiences);
 
-      const response = await axios.delete(`/resume/deleteresumeexperience/${id}`);
+      const response = await axios.delete(
+        `/resume/deleteresumeexperience/${id}`
+      );
 
       console.log("Deleted successfully:", response.data);
     } catch (error) {
@@ -102,32 +108,48 @@ const ExperienceStep = ({
     }
   };
 
-  const handleSearch = async (e) => {
+  const handleSearch = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
 
+    // Clear the previous timer if the user is still typing
+    clearTimeout(debounceTimer);
+
+    // Only make the API call if the input has 3 or more characters
     if (value.length > 2) {
-      try {
-        const response = await axios.get(`/users/getexperience`, {
-          params: { title: value },
-        });
+      // Set loading to true as we are waiting for the API call
+      setLoading(true);
 
-        let dutiesArray = response.data.duties || "";
+      // Start a new timer, wait 4 seconds after the user stops typing
+      debounceTimer = setTimeout(async () => {
+        try {
+          // Make the API request after the debounce period
+          const response = await axios.get(`/users/getexperience`, {
+            params: { title: value },
+          });
 
-        if (typeof dutiesArray === "string") {
-          dutiesArray = dutiesArray
-            .split("\n")
-            .map((duty) => duty.replace(/\*\*/g, "").trim()) // Remove ** and trim whitespace
-            .filter((duty) => duty.length > 0); // Filter out empty duties
+          let dutiesArray = response.data.duties || "";
+
+          // If the response is a string, split it into an array and filter
+          if (typeof dutiesArray === "string") {
+            dutiesArray = dutiesArray
+              .split("\n")
+              .map((duty) => duty.replace(/\*\*/g, "").trim()) // Remove ** and trim whitespace
+              .filter((duty) => duty.length > 0); // Filter out empty duties
+          }
+
+          // Update the state with suggested duties
+          setSuggestedDuties(dutiesArray);
+        } catch (error) {
+          console.error("Error fetching job duties:", error);
+          setSuggestedDuties([]); // Clear suggestions on error
+        } finally {
+          setLoading(false); // Stop the loading indicator
         }
-
-        setSuggestedDuties(dutiesArray);
-      } catch (error) {
-        console.error("Error fetching job duties:", error);
-        setSuggestedDuties([]); // Clear suggestions on error
-      }
+      }, 3500); // Delay of 4000 milliseconds (4 seconds)
     } else {
-      setSuggestedDuties([]); // Clear suggestions if search term is too short
+      // If input has fewer than 3 characters, clear the suggestions
+      setSuggestedDuties([]);
     }
   };
 
@@ -252,11 +274,28 @@ const ExperienceStep = ({
             margin="normal"
           />
           <List style={{ maxHeight: "200px", overflow: "auto" }}>
-            {suggestedDuties.map((duty, index) => (
-              <ListItem button key={index} onClick={() => handleDutyAdd(duty)}>
-                <ListItemText primary={duty} />
-              </ListItem>
-            ))}
+            {loading ? (
+              <div style={{ textAlign: "center", padding: "20px" }}>
+                <CircularProgress /> {/* Loading spinner */}
+              </div>
+            ) : suggestedDuties.length > 0 ? (
+              suggestedDuties.map((duty, index) => (
+                <ListItem
+                  button
+                  key={index}
+                  onClick={() => handleDutyAdd(duty)}
+                >
+                  <ListItemText primary={duty} />
+                </ListItem>
+              ))
+            ) : (
+              <Typography
+                variant="body2"
+                style={{ textAlign: "center", padding: "20px" }}
+              >
+                No bullet points found
+              </Typography>
+            )}
           </List>
         </Paper>
         <Paper
