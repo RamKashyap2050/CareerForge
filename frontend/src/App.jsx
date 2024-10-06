@@ -4,6 +4,7 @@ import LandingPage from "./pages/landingPage";
 import Login from "./pages/login";
 import Signup from "./pages/signup";
 import Dashboard from "./pages/Dashboard";
+import CreateCustomResume from "./pages/CreateCustomResume";
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/customresume" element={<CreateCustomResume />} />
       </Routes>
     </Router>
   );

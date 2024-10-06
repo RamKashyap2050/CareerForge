@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 require("pg");
+// const initAssociations = require("./models/initAssociations")
 const sequelize = require("./config/db");
 require("dotenv").config();
 const resumeRoutes = require("../backend/routes/resumeRoutes");
@@ -11,6 +12,7 @@ const session = require("express-session");
 const SequelizeStore = require("connect-session-sequelize")(session.Store); // Use Sequelize to store sessions
 const pg = require("pg");
 const Session = require("./models/Session"); // The Session model
+const fileupload = require("express-fileupload");
 
 const cookieParser = require("cookie-parser");
 
@@ -27,7 +29,7 @@ app.use(
 );
 
 app.use(cookieParser("RamKashyap"));
-
+app.use(fileupload())
 app.use(express.json());
 
 const passport = require("./config/passportConfig");
@@ -83,6 +85,7 @@ app.use(passport.authenticate("session"));
 
 app.use(passport.initialize());
 app.use(passport.session());
+// initAssociations();  // This sets up the relationships after models are loaded
 
 app.use("/users", userRoutes);
 app.use("/resume", resumeRoutes);

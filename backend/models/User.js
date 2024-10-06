@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../config/db"); // Ensure you have the correct path to your database configuration
+const Resume = require("./Resume");  // Ensure the path is correct
 
 const User = sequelize.define(
   "User",
@@ -27,6 +28,12 @@ const User = sequelize.define(
     timestamps: true,
   }
 );
+
+User.hasMany(Resume, {
+  foreignKey: "User", // This should match the `User` field in the `Resume` model
+  as: "resumes",     // Alias for easier access
+  onDelete: "CASCADE",  // Ensure that when a user is deleted, their resumes are also deleted
+});
 
 sequelize
   .sync()

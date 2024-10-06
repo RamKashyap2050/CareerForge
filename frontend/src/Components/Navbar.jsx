@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const navigate = useNavigate();
   const handleMenu = () => {
     setMenuOpen(!menuOpen);
   };
@@ -25,7 +27,12 @@ const Navbar = () => {
       console.error("Error logging out:", error);
     }
   };
-
+  const handleCustomResume = () => {
+    navigate("/customresume");
+  };
+  const handleDashboard = () => {
+    navigate("/dashboard");
+  };
   const styles = {
     appBar: {
       backgroundColor: "#00796b",
@@ -106,8 +113,11 @@ const Navbar = () => {
         <i style={styles.menuIcon} className="fas fa-bars"></i>
       </div>
       <div style={styles.menuItems}>
-        <div style={styles.menuItem} onClick={handleClose}>
-          Profile
+        <div style={styles.menuItem} onClick={handleDashboard}>
+          Dashboard
+        </div>
+        <div style={styles.menuItem} onClick={handleCustomResume}>
+          Create Custom Resume
         </div>
         <div style={styles.menuItem} onClick={handleLogout}>
           Logout

@@ -383,13 +383,16 @@ const Dashboard = () => {
 
   const generatePDF = async () => {
     setIsActiveStep(false); // Disable active state when generating PDF (final step)
-    console.log(resumeData);
+    console.log("Starting PDF generation...");
+    console.log("Resume Data:", resumeData);
+
     try {
       const pdfDoc = await PDFDocument.create();
       let page = pdfDoc.addPage([595, 842]); // A4 size in points: 595x842
       const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
       const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+      const sanitizeText = (text) => text.replace(/\n/g, " ");
 
       const { width, height } = page.getSize();
       const fontSize = 12;
@@ -397,158 +400,11 @@ const Dashboard = () => {
       const lineHeight = 14;
       const margin = 50;
       const maxWidth = width - margin * 2;
-      const parseSummary = (
-        html,
-        pdfDoc,
-        page,
-        yPosition,
-        margin,
-        maxWidth,
-        lineHeight,
-        font,
-        boldFont,
-        italicFont
-      ) => {
-        const parseHtml = (html) => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, "text/html");
-          return doc.body;
-        };
-
-        const drawText = (text, font, fontSize, x, y, options = {}) => {
-          const { color = rgb(0, 0, 0), backgroundColor = null } = options;
-          const lines = wrapText(text, maxWidth, font, fontSize);
-
-          lines.forEach((line) => {
-            if (backgroundColor) {
-              const textWidth = font.widthOfTextAtSize(line, fontSize);
-              page.drawRectangle({
-                x,
-                y: y - lineHeight + 2,
-                width: textWidth,
-                height: lineHeight + 4,
-                color: backgroundColor,
-              });
-            }
-
-            page.drawText(line, {
-              x,
-              y,
-              size: fontSize,
-              font,
-              color,
-            });
-
-            y -= lineHeight;
-          });
-
-          return y;
-        };
-
-        const element = parseHtml(html);
-
-        element.childNodes.forEach((node) => {
-          let currentFont = font;
-          let currentFontSize = 12;
-          let color = rgb(0, 0, 0);
-          let backgroundColor = null;
-
-          if (node.nodeType === Node.TEXT_NODE) {
-            yPosition = drawText(
-              node.textContent,
-              currentFont,
-              currentFontSize,
-              margin,
-              yPosition,
-              { color, backgroundColor }
-            );
-          } else if (node.nodeType === Node.ELEMENT_NODE) {
-            switch (node.tagName.toLowerCase()) {
-              case "strong":
-                currentFont = boldFont;
-                yPosition = drawText(
-                  node.textContent,
-                  currentFont,
-                  currentFontSize,
-                  margin,
-                  yPosition,
-                  { color, backgroundColor }
-                );
-                break;
-              case "em":
-                currentFont = italicFont;
-                yPosition = drawText(
-                  node.textContent,
-                  currentFont,
-                  currentFontSize,
-                  margin,
-                  yPosition,
-                  { color, backgroundColor }
-                );
-                break;
-              case "span":
-                if (node.style.color) {
-                  const hexColor = node.style.color.replace("#", "");
-                  color = rgb(
-                    parseInt(hexColor.slice(0, 2), 16) / 255,
-                    parseInt(hexColor.slice(2, 4), 16) / 255,
-                    parseInt(hexColor.slice(4, 6), 16) / 255
-                  );
-                }
-                if (node.style.backgroundColor) {
-                  const bgColor = node.style.backgroundColor.replace("#", "");
-                  backgroundColor = rgb(
-                    parseInt(bgColor.slice(0, 2), 16) / 255,
-                    parseInt(bgColor.slice(2, 4), 16) / 255,
-                    parseInt(bgColor.slice(4, 6), 16) / 255
-                  );
-                }
-                yPosition = drawText(
-                  node.textContent,
-                  currentFont,
-                  currentFontSize,
-                  margin,
-                  yPosition,
-                  { color, backgroundColor }
-                );
-                break;
-              case "br":
-                yPosition -= lineHeight;
-                break;
-              case "p":
-                yPosition = drawText(
-                  node.textContent,
-                  currentFont,
-                  currentFontSize,
-                  margin,
-                  yPosition,
-                  { color, backgroundColor }
-                );
-                yPosition -= 8;
-                break;
-              default:
-                yPosition = parseSummary(
-                  node.outerHTML,
-                  pdfDoc,
-                  page,
-                  yPosition,
-                  margin,
-                  maxWidth,
-                  lineHeight,
-                  font,
-                  boldFont,
-                  italicFont
-                );
-                break;
-            }
-          }
-        });
-
-        return yPosition;
-      };
 
       const wrapText = (text, maxWidth, font, fontSize) => {
-        const words = text.split(" ");
+        console.log("Wrapping text:", text);
+        const sanitizedText = sanitizeText(text);
+        const words = sanitizedText.split(" ");
         let lines = [];
         let currentLine = words[0];
 
@@ -566,166 +422,255 @@ const Dashboard = () => {
           }
         }
         lines.push(currentLine);
+        console.log("Wrapped lines:", lines);
         return lines;
       };
 
-      const drawText = (text, font, fontSize, options = {}) => {
+      const drawHeading = async (heading, fontSize, options = {}) => {
         const { x = margin, align = "left", color = rgb(0, 0, 0) } = options;
-        const paragraphs = text.split("\n");
-        paragraphs.forEach((paragraph) => {
-          const lines = wrapText(paragraph, maxWidth, font, fontSize);
+        const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold); // Embedding bold font
 
-          lines.forEach((line) => {
-            if (yPosition < margin + lineHeight) {
-              page = pdfDoc.addPage([595, 842]);
-              yPosition = height - margin;
-            }
-            const xPosition =
-              align === "center"
-                ? (width - font.widthOfTextAtSize(line, fontSize)) / 2
-                : x;
+        // Calculate x position based on alignment
+        let xPosition = x; // Default to left alignment
+        const headingWidth = boldFont.widthOfTextAtSize(heading, fontSize);
 
-            page.drawText(line, {
-              x: xPosition,
-              y: yPosition,
-              size: fontSize,
-              font: font,
-              color: color,
-            });
-            yPosition -= lineHeight;
-          });
+        if (align === "center") {
+          xPosition = (width - headingWidth) / 2; // Center the heading on the page
+        } else if (align === "right") {
+          xPosition = width - margin - headingWidth; // Align to the right
+        }
 
-          yPosition -= 8;
+        // Draw the heading text
+        page.drawText(heading, {
+          x: xPosition,
+          y: yPosition,
+          size: fontSize,
+          font: boldFont, // Use bold font for heading
+          color: color,
         });
+
+        // Adjust yPosition to add spacing after the heading
+        yPosition -= lineHeight * 1.5; // Add extra space after the heading
       };
 
       const parseHtmlAndDraw = (element) => {
+        let textElements = []; // Initialize an array to hold all text elements in a block
+
         element.childNodes.forEach((node) => {
-          let currentFont = font;
-          let currentFontSize = fontSize;
+          let currentFont = font; // Default font
+          let currentFontSize = fontSize; // Default font size
           let color = rgb(0, 0, 0); // Default color
 
           // Handle Text Nodes (Plain text)
           if (node.nodeType === Node.TEXT_NODE) {
-            drawText(node.textContent, currentFont, currentFontSize, { color });
+            const textContent = node.textContent.trim();
+            if (textContent) {
+              // Add plain text to the textElements array
+              textElements.push({
+                text: textContent,
+                isBold: false,
+                isItalic: false,
+              });
+            }
           }
 
           // Handle Element Nodes (HTML tags)
           else if (node.nodeType === Node.ELEMENT_NODE) {
             switch (node.tagName.toLowerCase()) {
               case "strong": // Bold text
-              console.log("Bold text detected:", node.textContent);
-              currentFont = boldFont;
-              drawText(node.textContent, currentFont, currentFontSize, { color });
-              break;
-            
-              case "em": // Italic text
-                currentFont = italicFont;
-                drawText(node.textContent, currentFont, currentFontSize, {
-                  color,
-                });
+                const boldText = node.textContent.trim();
+                if (boldText) {
+                  // Add bold text to the textElements array
+                  textElements.push({
+                    text: boldText,
+                    isBold: true,
+                    isItalic: false,
+                  });
+                }
                 break;
 
-              case "span": // Colored or styled span
-                if (node.style.color) {
-                  const hexColor = node.style.color.replace("#", "");
-                  color = rgb(
-                    parseInt(hexColor.slice(0, 2), 16) / 255,
-                    parseInt(hexColor.slice(2, 4), 16) / 255,
-                    parseInt(hexColor.slice(4, 6), 16) / 255
-                  );
+              case "em": // Italic text
+                const italicText = node.textContent.trim();
+                if (italicText) {
+                  // Add italic text to the textElements array
+                  textElements.push({
+                    text: italicText,
+                    isBold: false,
+                    isItalic: true,
+                  });
                 }
-                drawText(node.textContent, currentFont, currentFontSize, {
-                  color,
-                });
                 break;
 
               case "br": // Line break
-                yPosition -= lineHeight;
+                // Draw all accumulated text before handling the line break
+                if (textElements.length > 0) {
+                  drawText(textElements, currentFontSize, { color });
+                  textElements = []; // Clear the array after drawing
+                }
+                yPosition -= lineHeight; // Move to the next line
                 break;
 
               case "p": // Paragraphs
-                drawText(node.textContent, currentFont, currentFontSize, {
-                  color,
-                });
-                yPosition -= 8; // Add some spacing after the paragraph
+                // Recursively process the paragraph and its contents
+                if (textElements.length > 0) {
+                  drawText(textElements, currentFontSize, { color });
+                  textElements = []; // Clear the array after drawing the paragraph
+                }
+                parseHtmlAndDraw(node); // Recursively process child nodes
+                yPosition -= lineHeight * 1.5; // Add space after the paragraph
                 break;
-
               case "ul": // Unordered List
-                node.childNodes.forEach((li) => {
-                  if (li.tagName.toLowerCase() === "li") {
-                    drawText(
-                      `• ${li.textContent}`,
-                      currentFont,
-                      currentFontSize,
-                      {
-                        color,
-                        x: margin + 10, // Indent the bullet points
-                      }
-                    );
-                    yPosition -= lineHeight;
-                  }
-                });
-                yPosition -= 8; // Add spacing after the list
-                break;
-
               case "ol": // Ordered List
-                let listItemNumber = 1;
+                // Draw each list item in the unordered/ordered list
                 node.childNodes.forEach((li) => {
                   if (li.tagName.toLowerCase() === "li") {
-                    drawText(
-                      `${listItemNumber}. ${li.textContent}`,
-                      currentFont,
-                      currentFontSize,
-                      {
-                        color,
-                        x: margin + 10, // Indent the numbered list
-                      }
-                    );
-                    listItemNumber++;
+                    const bullet =
+                      node.tagName.toLowerCase() === "ul"
+                        ? "• "
+                        : `${listItemNumber++}. `;
+                    const liText = li.textContent.trim();
+
+                    // Accumulate and draw each list item
+                    textElements.push({
+                      text: bullet + liText,
+                      isBold: false,
+                      isItalic: false,
+                    });
+                    drawText(textElements, fontSize, { color });
+                    textElements = [];
                     yPosition -= lineHeight;
                   }
                 });
-                yPosition -= 8; // Add spacing after the list
+                yPosition -= 8; // Add extra spacing after the list
                 break;
-
               default:
-                parseHtmlAndDraw(node); // Handle nested elements recursively
+                // Recursively handle other nested elements
+                parseHtmlAndDraw(node);
                 break;
             }
           }
         });
+
+        // After all nodes are processed, draw the remaining text
+        if (textElements.length > 0) {
+          drawText(textElements, fontSize, { color: rgb(0, 0, 0) });
+        }
       };
 
-      const drawSeparator = () => {
-        if (yPosition < margin + lineHeight * 2) {
-          page = pdfDoc.addPage([595, 842]);
-          yPosition = height - margin;
+      const drawText = (textElements, fontSize, options = {}) => {
+        // Ensure textElements is an array before proceeding
+        if (!Array.isArray(textElements)) {
+          console.error("Error: textElements is not an array:", textElements);
+          return; // Stop execution if it's not an array
         }
-        yPosition -= lineHeight;
-        page.drawLine({
-          start: { x: margin, y: yPosition },
-          end: { x: width - margin, y: yPosition },
-          thickness: 1,
-          color: rgb(0.6, 0.6, 0.6),
+
+        const { x = margin, align = "left", color = rgb(0, 0, 0) } = options;
+        let xPosition = x;
+
+        textElements.forEach((element) => {
+          const { text, isBold, isItalic } = element;
+          const currentFont = isBold ? boldFont : isItalic ? italicFont : font;
+
+          // Sanitize text to remove newlines and split text into paragraphs
+          const sanitizedText = text.replace(/\n/g, " ");
+          const words = sanitizedText.split(" ");
+          words.forEach((word) => {
+            const wordWidth = currentFont.widthOfTextAtSize(word, fontSize);
+
+            if (xPosition + wordWidth > maxWidth) {
+              // Line break if word exceeds max width
+              yPosition -= lineHeight;
+              xPosition = margin; // Reset x position after line break
+            }
+
+            page.drawText(word, {
+              x: xPosition,
+              y: yPosition,
+              size: fontSize,
+              font: currentFont,
+              color: color,
+            });
+
+            // Move xPosition to the right after drawing the word
+            xPosition +=
+              wordWidth + currentFont.widthOfTextAtSize(" ", fontSize);
+          });
         });
-        yPosition -= lineHeight;
+
+        // Move yPosition for spacing between paragraphs or elements
+        yPosition -= 8;
       };
 
       const parseHtml = (html) => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, "text/html");
+        console.log("Parsed HTML Body:", doc.body);
         return doc.body;
       };
 
-      drawText(
+      // const drawSeparator = () => {
+      //   if (yPosition < margin + lineHeight * 2) {
+      //     page = pdfDoc.addPage([595, 842]);
+      //     yPosition = height - margin;
+      //   }
+      //   yPosition -= lineHeight;
+      //   page.drawLine({
+      //     start: { x: margin, y: yPosition },
+      //     end: { x: width - margin, y: yPosition },
+      //     thickness: 1,
+      //     color: rgb(0.6, 0.6, 0.6),
+      //   });
+      //   yPosition -= lineHeight;
+      // };
+
+      const drawPoints = async (pointsArray, fontSize, options = {}) => {
+        const { x = margin, align = "left", color = rgb(0, 0, 0) } = options;
+        const bulletPointFont = await pdfDoc.embedFont(StandardFonts.Helvetica); // Regular font for points
+
+        pointsArray.forEach((point) => {
+          // Handle line wrapping and ensure each point starts with a bullet
+          const wrappedLines = wrapText(
+            point,
+            maxWidth,
+            bulletPointFont,
+            fontSize
+          );
+          wrappedLines.forEach((line) => {
+            if (yPosition < margin + lineHeight) {
+              page = pdfDoc.addPage([595, 842]); // Add new page if text overflows
+              yPosition = height - margin;
+            }
+
+            let xPosition =
+              align === "center"
+                ? (width - bulletPointFont.widthOfTextAtSize(line, fontSize)) /
+                  2
+                : x;
+
+            // Add bullet point at the beginning
+            page.drawText(`${line}`, {
+              x: xPosition,
+              y: yPosition,
+              size: fontSize,
+              font: bulletPointFont,
+              color: color,
+            });
+
+            yPosition -= lineHeight; // Move down after drawing each line
+          });
+          yPosition -= 8; // Add extra spacing after each point
+        });
+      };
+
+      await drawHeading(
         `${resumeData.bio.FirstName} ${resumeData.bio.LastName}`,
-        boldFont,
-        fontSize,
+        fontSize + 2, // Larger font size for headings
         {
-          align: "start",
+          align: "left", // Left alignment
+          color: rgb(0, 0, 0), // Black color for heading
         }
       );
+
       parseHtmlAndDraw(
         parseHtml(
           `<p>Phone: ${resumeData.bio.PhoneNumber} | Email: ${resumeData.bio.Email}</p>`
@@ -740,25 +685,46 @@ const Dashboard = () => {
         parseHtml(`<p>Location: ${resumeData.bio.Location}</p>`)
       );
 
-      drawSeparator();
+      // drawSeparator();
       // Professional Summary Section
-      drawText("Professional Summary:", boldFont, fontSize, {
-        align: "center",
-      });
+      await drawHeading(
+        "Professional Summary",
+        fontSize + 2, // Larger font size for headings
+        {
+          align: "center", // Center alignment
+          color: rgb(0, 0, 0), // Black color for heading
+        }
+      );
 
       // Parse and draw the summary with HTML tags
+      console.log("Raw Summary:", resumeData.summary);
       const parsedSummary = parseHtml(resumeData.summary);
+      console.log("Parsed Summary:", parsedSummary);
       parseHtmlAndDraw(parsedSummary);
 
-      drawSeparator();
+      // drawSeparator();
 
-      drawText("Skills:", boldFont, fontSize, { align: "center" });
+      await drawHeading(
+        "Skills",
+        fontSize + 2, // Larger font size for headings
+        {
+          align: "center", // Center alignment
+          color: rgb(0, 0, 0), // Black color for heading
+        }
+      );
       parseHtmlAndDraw(parseHtml(resumeData.skills.join(", ")));
 
-      drawSeparator();
+      yPosition -= lineHeight * 2; // Adjust the multiplier based on how much space you want
 
       // Experience Section
-      drawText("Experience:", boldFont, fontSize, { align: "center" });
+      await drawHeading(
+        "Experience",
+        fontSize + 2, // Larger font size for headings
+        {
+          align: "center", // Center alignment for heading
+          color: rgb(0, 0, 0), // Black color for heading
+        }
+      );
 
       resumeData.experiences.forEach((exp) => {
         const formattedStartDate =
@@ -778,24 +744,31 @@ const Dashboard = () => {
               )
             : "Present";
 
-        parseHtmlAndDraw(
-          parseHtml(
-            `<p>${
-              exp.CompanyName || exp.companyName
-            } (${formattedStartDate} - ${formattedEndDate}): ${
-              exp.RoleTitle || exp.occupation
-            }</p>`
-          )
+        // Draw the company name, role, and dates
+        drawHeading(
+          `${exp.CompanyName} (${formattedStartDate} - ${formattedEndDate}): ${exp.RoleTitle}`,
+          fontSize,
+          { align: "left", color: rgb(0, 0, 0) }
         );
-        parseHtmlAndDraw(parseHtml(exp.ExperienceSummary || exp.summary));
-        yPosition -= 8;
+
+        // Split the summary into bullet points and draw them
+        const experiencePoints = exp.ExperienceSummary.split("\n");
+        drawPoints(experiencePoints, fontSize, { color: rgb(0, 0, 0) });
       });
 
-      drawSeparator();
+      // drawSeparator();
 
       // Education Section
-      drawText("Education:", boldFont, fontSize, { align: "center" });
-      resumeData.education.forEach((edu) => {
+      await drawHeading(
+        "Education",
+        fontSize + 2, // Larger font size for headings
+        {
+          align: "center", // Center alignment for heading
+          color: rgb(0, 0, 0), // Black color for heading
+        }
+      );
+
+      resumeData.education.forEach(async (edu) => {
         const formattedStartDate =
           edu.StartDate || edu.startDate
             ? format(
@@ -812,17 +785,18 @@ const Dashboard = () => {
                 "MMMM yyyy"
               )
             : "Present";
-        parseHtmlAndDraw(
-          parseHtml(
-            `<p>${edu.instituteName || edu.InstitueName} - ${
-              edu.degreeType || edu.DegreeType
-            } (${formattedStartDate} - ${formattedEndDate})</p>`
-          )
+
+        // Draw the education institute, degree, and dates
+        await drawHeading(
+          `${edu.InstitueName} - ${edu.DegreeType} (${formattedStartDate} - ${formattedEndDate})`,
+          fontSize,
+          { align: "left", color: rgb(0, 0, 0) }
         );
-        parseHtmlAndDraw(
+
+        // Parse and draw the education summary (with list support)
+        await parseHtmlAndDraw(
           parseHtml(edu.gradesAchievements || edu.EducationSummary)
         );
-        yPosition -= 8;
       });
 
       // Save PDF

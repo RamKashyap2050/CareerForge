@@ -4,6 +4,7 @@ const Resume = require("../models/Resume");
 const ResumeSummary = require("../models/ResumeSummary");
 const ResumeSkills = require("../models/ResumeSkill");
 const ResumeExperience = require("../models/ResumeExperience");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 const ResumeEducation = require("../models/ResumeEducation");
 const ResumeExtraSection = require("../models/ResumeExtraSection");
 const getDraftUserSingleResume = expressAsyncHandler(async (req, res) => {
@@ -58,7 +59,6 @@ const getDraftUserSingleResume = expressAsyncHandler(async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 const getUserDraftResumes = expressAsyncHandler(async (req, res) => {
   if (!req.user || !req.user.id) {
@@ -356,6 +356,77 @@ const updateResumeEducation = expressAsyncHandler(async (req, res) => {
   }
 });
 
+//Swiftlet chats
+const askswiftlet = expressAsyncHandler(async (req, res) => {
+  const { prompt, jobDescription, resumeText } = req.body;
+  console.log(prompt, jobDescription, resumeText);
+
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  let fullPrompt = "";
+
+  // Switch based on the prompt received from the frontend
+  if (prompt === "Why am I a good fit?") {
+    fullPrompt = `
+      You are tasked with evaluating a candidate's fit for the role of "${prompt}".
+      Here is the job description:
+      "${jobDescription}"
+
+      Here is the candidate's resume:
+      "${resumeText}"
+
+      Based on both the job description and resume, provide a comparison and explain why the candidate is a strong fit for the position.
+      Highlight key experiences, skills, and achievements from the resume that align with the job description.
+    `;
+  } else if (prompt === "Create a cover letter") {
+    fullPrompt = `
+    You are tasked with writing a professional cover letter for a candidate applying to the role of "${jobDescription}".
+
+    Here is the candidate's resume Resume:
+    "${resumeText}". Extract the following details:
+
+    - Full Name
+    - Address
+    - Phone Number
+    - Email Address
+
+    
+
+    Use the following structure for the cover letter:
+    1. Replace "[Candidate Full Name]" with the extracted full name.
+    2. Replace "[Candidate Address]" with the extracted address.
+    3. Replace "[Candidate Phone Number]" with the extracted phone number.
+    4. Replace "[Candidate Email Address]" with the extracted email address.
+    
+    The cover letter should summarize the candidate's skills, experience, and qualifications based on the resume. Ensure that all placeholders are replaced with the correct information from the resume.
+  `;
+  } else if (prompt === "Suggest similar roles") {
+    fullPrompt = `
+      Based on the following resume, suggest job titles that would be suitable for the candidate's skills and experience:
+      "${resumeText}"
+
+      Provide only job titles for roles that match the candidate’s experience and skills.
+    `;
+  } else {
+    return res.status(400).json({ message: "Unknown prompt" });
+  }
+
+  // Generate content from the model based on the constructed prompt
+  try {
+    const result = await model.generateContent(fullPrompt);
+    const text = await result.response.text();
+    console.log(text);
+
+    // Send the generated text back as the response
+    res.status(200).json({ message: text });
+  } catch (error) {
+    console.error("Error generating content:", error);
+    res
+      .status(500)
+      .json({ message: "Error generating content", error: error.message });
+  }
+});
+
 module.exports = {
   createOrUpdateResumeBio,
   updateResumeSummary,
@@ -365,4 +436,5 @@ module.exports = {
   updateResumeExperience,
   deleteresumeexperience,
   updateResumeEducation,
+  askswiftlet,
 };
