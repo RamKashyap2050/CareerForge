@@ -1,6 +1,7 @@
 const { Sequelize, DataTypes } = require("sequelize");
 const sequelize = require("../config/db"); // Ensure you have the correct path to your database configuration
 // Import the related models
+const User = require("./User")
 const ResumeBio = require("./ResumeBio");
 const ResumeSummary = require("./ResumeSummary");
 const ResumeSkills = require("./ResumeSkill");
@@ -84,46 +85,53 @@ const Resume = sequelize.define(
   }
 );
 
-Resume.belongsTo(ResumeBio, { foreignKey: "ResumeBio", as: "resumeBio" });
-Resume.belongsTo(ResumeSummary, {
-  foreignKey: "ResumeSummary",
-  as: "resumeSummary",
-});
-Resume.belongsTo(ResumeSkills, {
-  foreignKey: "ResumeSkills",
-  as: "resumeSkills",
-});
-Resume.belongsTo(ResumeExperience, {
-  foreignKey: "ResumeExperience",
-  as: "resumeExperience",
-});
-Resume.hasMany(ResumeExperience, {
-  foreignKey: "ResumeId",
-  as: "resumeExperiences",
-});
-
-Resume.belongsTo(ResumeEducation, {
-  foreignKey: "ResumeEducation",
-  as: "resumeEducation",
-});
-Resume.hasMany(ResumeEducation, {
-  foreignKey: "ResumeId",
-  as: "resumeEducations",
-});
-Resume.belongsTo(ResumeExtraSection, {
-  foreignKey: "ResumeExtraSection",
-  as: "resumeExtraSection",
-});
-
-sequelize
-.sync({alter:true})
-.then(() => {
-    console.log(
-      "Resume table has been successfully created, if one doesn't exist"
-    );
-  })
-  .catch((error) =>
-    console.error("This error occurred while syncing the Resume model:", error)
-  );
-
 module.exports = Resume;
+
+
+// Resume.belongsTo(ResumeBio, { foreignKey: "ResumeBio", as: "resumeBio" });
+// Resume.belongsTo(ResumeSummary, {
+//   foreignKey: "ResumeSummary",
+//   as: "resumeSummary",
+// });
+// Resume.belongsTo(ResumeSkills, {
+//   foreignKey: "ResumeSkills",
+//   as: "resumeSkills",
+// });
+// Resume.belongsTo(ResumeExperience, {
+//   foreignKey: "ResumeExperience",
+//   as: "resumeExperience",
+// });
+// Resume.hasMany(ResumeExperience, {
+//   foreignKey: "ResumeId",
+//   as: "resumeExperiences",
+// });
+
+// Resume.belongsTo(ResumeEducation, {
+//   foreignKey: "ResumeEducation",
+//   as: "resumeEducation",
+// });
+// Resume.hasMany(ResumeEducation, {
+//   foreignKey: "ResumeId",
+//   as: "resumeEducations",
+// });
+// Resume.belongsTo(ResumeExtraSection, {
+//   foreignKey: "ResumeExtraSection",
+//   as: "resumeExtraSection",
+// });
+// Resume.belongsTo(User, {
+//   foreignKey: "User", // This should match the `User` field in the Resume model
+//   as: "user", // Alias, adjust it based on your preference
+//   onDelete: "CASCADE",
+// });
+
+// sequelize
+//   .sync({ alter: true })
+//   .then(() => {
+//     console.log(
+//       "Resume table has been successfully created, if one doesn't exist"
+//     );
+//   })
+//   .catch((error) =>
+//     console.error("This error occurred while syncing the Resume model:", error)
+//   );
+

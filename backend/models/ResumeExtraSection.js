@@ -34,18 +34,18 @@ const ResumeExtraSection = sequelize.define(
   }
 );
 
-sequelize
-  .sync()
-  .then(() => {
-    console.log(
-      "Resume Extra Section table has been successfully created or updated"
-    );
-  })
-  .catch((error) =>
-    console.error(
-      "This error occurred while syncing the Resume Experience model:",
-      error
-    )
-  );
+// sequelize
+//   .sync()
+//   .then(() => {
+//     console.log(
+//       "Resume Extra Section table has been successfully created or updated"
+//     );
+//   })
+//   .catch((error) =>
+//     console.error(
+//       "This error occurred while syncing the Resume Experience model:",
+//       error
+//     )
+//   );
 
 module.exports = ResumeExtraSection;

@@ -29,18 +29,18 @@ const ResumeSummary = sequelize.define(
   }
 );
 
-sequelize
-  .sync()
-  .then(() => {
-    console.log(
-      "Resume Summary table has been successfully created, if one doesn't exist"
-    );
-  })
-  .catch((error) =>
-    console.error(
-      "This error occurred while syncing the Resume Summary model:",
-      error
-    )
-  );
+// sequelize
+//   .sync()
+//   .then(() => {
+//     console.log(
+//       "Resume Summary table has been successfully created, if one doesn't exist"
+//     );
+//   })
+//   .catch((error) =>
+//     console.error(
+//       "This error occurred while syncing the Resume Summary model:",
+//       error
+//     )
+//   );
 
 module.exports = ResumeSummary;

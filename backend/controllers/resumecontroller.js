@@ -75,8 +75,8 @@ const getUserDraftResumes = expressAsyncHandler(async (req, res) => {
         { model: ResumeBio, as: "resumeBio" },
         { model: ResumeSummary, as: "resumeSummary" },
         { model: ResumeSkills, as: "resumeSkills" },
-        { model: ResumeExperience, as: "resumeExperience" },
-        { model: ResumeEducation, as: "resumeEducation" },
+        { model: ResumeExperience, as: "resumeExperiences" },
+        { model: ResumeEducation, as: "resumeEducations" },
         { model: ResumeExtraSection, as: "resumeExtraSection" },
       ],
     });
@@ -376,7 +376,7 @@ const askswiftlet = expressAsyncHandler(async (req, res) => {
       "${resumeText}"
 
       Based on both the job description and resume, provide a comparison and explain why the candidate is a strong fit for the position.
-      Highlight key experiences, skills, and achievements from the resume that align with the job description.
+      Highlight key experiences, skills, and achievements from the resume that align with the job description, at the end give a rating out of 5 how much does candidate fit to job.
     `;
   } else if (prompt === "Create a cover letter") {
     fullPrompt = `

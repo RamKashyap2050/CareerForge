@@ -57,18 +57,18 @@ const ResumeBio = sequelize.define(
   }
 );
 
-sequelize
-  .sync()
-  .then(() => {
-    console.log(
-      "Resume Bio table has been successfully created, if one doesn't exist"
-    );
-  })
-  .catch((error) =>
-    console.error(
-      "This error occurred while syncing the Resume Bio model:",
-      error
-    )
-  );
+// sequelize
+//   .sync()
+//   .then(() => {
+//     console.log(
+//       "Resume Bio table has been successfully created, if one doesn't exist"
+//     );
+//   })
+//   .catch((error) =>
+//     console.error(
+//       "This error occurred while syncing the Resume Bio model:",
+//       error
+//     )
+//   );
 
 module.exports = ResumeBio;

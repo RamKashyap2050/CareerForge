@@ -27,18 +27,18 @@ const Session = sequelize.define(
   }
 );
 
-sequelize
-  .sync()
-  .then(() => {
-    console.log(
-      "Session has been successfully created, if one doesn't exist"
-    );
-  })
-  .catch((error) =>
-    console.error(
-      "This error occurred while syncing the Session model:",
-      error
-    )
-  );
+// sequelize
+//   .sync()
+//   .then(() => {
+//     console.log(
+//       "Session has been successfully created, if one doesn't exist"
+//     );
+//   })
+//   .catch((error) =>
+//     console.error(
+//       "This error occurred while syncing the Session model:",
+//       error
+//     )
+//   );
 
 module.exports = Session;

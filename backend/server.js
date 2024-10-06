@@ -13,6 +13,7 @@ const SequelizeStore = require("connect-session-sequelize")(session.Store); // U
 const pg = require("pg");
 const Session = require("./models/Session"); // The Session model
 const fileupload = require("express-fileupload");
+const { applyAssociations } = require("./models/associations");
 
 const cookieParser = require("cookie-parser");
 
@@ -29,7 +30,7 @@ app.use(
 );
 
 app.use(cookieParser("RamKashyap"));
-app.use(fileupload())
+app.use(fileupload());
 app.use(express.json());
 
 const passport = require("./config/passportConfig");
@@ -37,7 +38,7 @@ const passport = require("./config/passportConfig");
 const pgPool = new pg.Pool({
   connectionString: process.env.POSTGRES_URL,
 });
-
+applyAssociations()
 app.use(
   session({
     secret: process.env.SECRET_KEY || "RamKashyap",

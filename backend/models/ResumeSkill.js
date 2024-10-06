@@ -29,18 +29,18 @@ const ResumeSkills = sequelize.define(
   }
 );
 
-sequelize
-  .sync()
-  .then(() => {
-    console.log(
-      "Resume Skills table has been successfully created, if one doesn't exist"
-    );
-  })
-  .catch((error) =>
-    console.error(
-      "This error occurred while syncing the Resume Skills model:",
-      error
-    )
-  );
+// sequelize
+//   .sync()
+//   .then(() => {
+//     console.log(
+//       "Resume Skills table has been successfully created, if one doesn't exist"
+//     );
+//   })
+//   .catch((error) =>
+//     console.error(
+//       "This error occurred while syncing the Resume Skills model:",
+//       error
+//     )
+//   );
 
 module.exports = ResumeSkills;

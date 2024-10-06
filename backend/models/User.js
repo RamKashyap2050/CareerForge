@@ -29,21 +29,23 @@ const User = sequelize.define(
   }
 );
 
-User.hasMany(Resume, {
-  foreignKey: "User", // This should match the `User` field in the `Resume` model
-  as: "resumes",     // Alias for easier access
-  onDelete: "CASCADE",  // Ensure that when a user is deleted, their resumes are also deleted
-});
-
-sequelize
-  .sync({alter:true})
-  .then(() => {
-    console.log(
-      "User table has been successfully created, if one doesn't exist"
-    );
-  })
-  .catch((error) =>
-    console.error("This error occurred while syncing the User model:", error)
-  );
-
 module.exports = User;
+
+
+// User.hasMany(Resume, {
+//   foreignKey: "User", // This should match the `User` field in the `Resume` model
+//   as: "resumes",     // Alias for easier access
+//   onDelete: "CASCADE",  // Ensure that when a user is deleted, their resumes are also deleted
+// });
+
+// sequelize
+//   .sync({alter:true})
+//   .then(() => {
+//     console.log(
+//       "User table has been successfully created, if one doesn't exist"
+//     );
+//   })
+//   .catch((error) =>
+//     console.error("This error occurred while syncing the User model:", error)
+//   );
+
