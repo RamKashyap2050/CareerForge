@@ -116,8 +116,8 @@ Resume.belongsTo(ResumeExtraSection, {
 });
 
 sequelize
-  .sync()
-  .then(() => {
+.sync({alter:true})
+.then(() => {
     console.log(
       "Resume table has been successfully created, if one doesn't exist"
     );

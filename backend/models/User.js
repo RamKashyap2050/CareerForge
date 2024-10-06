@@ -36,7 +36,7 @@ User.hasMany(Resume, {
 });
 
 sequelize
-  .sync()
+  .sync({alter:true})
   .then(() => {
     console.log(
       "User table has been successfully created, if one doesn't exist"
