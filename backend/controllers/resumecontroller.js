@@ -427,6 +427,80 @@ const askswiftlet = expressAsyncHandler(async (req, res) => {
   }
 });
 
+//Parsing and Creating Custom Resume
+const parsenadcreatecustomresume = expressAsyncHandler(async (req, res) => {
+  const { jobDescription, resumeText } = req.body;
+  console.log(jobDescription, resumeText);
+  try {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Updated structured prompt
+    const prompt = `
+    I have provided a job description and a resume. Please modify the resume by:
+
+    1. **Updating the skills section**: Match the skills from the resume to the skills in the job description, adding relevant skills from the job description that the resume might not have. For example, if the job description requires "TSX" and the resume mentions "Angular", replace "Angular" with or add "TSX" where relevant.
+    
+    2. **Updating the experience points**: Modify the experience to make it impactful, by adding relevant keywords from the job description. For Example If the resume mentions 6 years of experience but the job description asks for 5 years, adjust the wording to say "5+ years" of experience.
+
+    3. **Modifying the summary**: Update the professional summary to include job-relevant keywords, especially those from the skills section.
+
+        4. **Maintaining Bio Information**: Please keep the name, email, phone number, and other contact information unchanged, but include them in the final output.
+    Return the output in the following structured JSON format:
+    {
+   "bio": {
+        "firstName": "<First Name>",
+        "lastName": "<Last Name>",
+        "email": "<Email>",
+        "phoneNumber": "<Phone Number>",
+        "linkedin": "<LinkedIn URL>",
+        "github": "<GitHub URL>",
+        "location": "<Location>"
+      },      "summary": "<updated summary>",
+      "skills": ["<list of updated skills>"],
+      "experiences": [
+        {
+          "companyName": "<company name>",
+          "roleTitle": "<role title>",
+          "startDate": "<start date>",
+          "endDate": "<end date>",
+          "experienceDetails": ["<updated experience points>"]
+        }
+      ],
+      "education": [
+        {
+          "institution": "<institution name>",
+          "degreeType": "<degree type>",
+          "startDate": "<start date>",
+          "endDate": "<end date>"
+        }
+      ]
+    }
+
+    Job Description: ${jobDescription}
+
+    Resume Text: ${resumeText}
+    `;
+
+    // Generate structured output from Gemini model
+    const result = await model.generateContent(prompt);
+
+    // Parse the structured output
+    const structuredOutput = result.response.text(); // Assuming response is JSON parsable
+
+    // Send structured output to frontend
+    res.status(200).json({
+      success: true,
+      data: structuredOutput,
+    });
+  } catch (error) {
+    console.error("Error generating custom resume:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Error generating resume" });
+  }
+});
+
 module.exports = {
   createOrUpdateResumeBio,
   updateResumeSummary,
@@ -437,4 +511,5 @@ module.exports = {
   deleteresumeexperience,
   updateResumeEducation,
   askswiftlet,
+  parsenadcreatecustomresume,
 };

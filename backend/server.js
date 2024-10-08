@@ -38,7 +38,7 @@ const passport = require("./config/passportConfig");
 const pgPool = new pg.Pool({
   connectionString: process.env.POSTGRES_URL,
 });
-applyAssociations()
+applyAssociations();
 app.use(
   session({
     secret: process.env.SECRET_KEY || "RamKashyap",

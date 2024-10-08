@@ -4,6 +4,7 @@ import { styled } from "@mui/system";
 import Navbar from "../Components/Navbar";
 import FlutterDashIcon from "@mui/icons-material/FlutterDash";
 import axios from "axios";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 const RootContainer = styled(Box)(({ theme }) => ({
   padding: "2rem",
@@ -25,10 +26,208 @@ const CreateCustomResume = () => {
   const [resume, setResume] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [modifiedResumeInUse, setModifiedResume] = useState(null);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     setResume(file);
+  };
+
+  //Resume Parser Function
+  const handleResumeModification = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("jobDescription", jobDescription);
+      formData.append("resumeText", resume);
+
+      // API call to get the modified resume from the backend
+      const response = await axios.post("/resume/parseresume", formData);
+
+      let modifiedResume = response.data.data;
+
+      // Check if the response starts with backticks and remove them
+      if (typeof modifiedResume === "string") {
+        console.log("Received string with backticks, removing them...");
+        modifiedResume = modifiedResume.replace(/```json|```/g, "");
+        modifiedResume = JSON.parse(modifiedResume); // Now parse the cleaned string
+      }
+
+      // Check if the modifiedResume is correctly formatted as JSON
+      console.log("Modified Resume after parsing", modifiedResume);
+
+      // Now pass the modifiedResume to the PDF generator
+      generatePDF(modifiedResume);
+    } catch (error) {
+      console.error("Error modifying resume:", error);
+    }
+  };
+
+  const generatePDF = async (modifiedResume) => {
+    console.log("I am Modified Resume entering generate PDF", modifiedResume);
+    // Check if the modified resume has the necessary data
+    if (!modifiedResume.bio) {
+      console.error("Missing Bio");
+      return;
+    }
+
+    const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
+
+    const pdfDoc = await PDFDocument.create();
+    let page = pdfDoc.addPage([595, 842]); // A4 size in points: 595x842
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+    const fontSize = 12;
+    let yPosition = 800;
+    const lineHeight = 14;
+    const margin = 50;
+    const { width, height } = page.getSize();
+    const maxWidth = width - margin * 2;
+
+    const sanitizeText = (text) => text.replace(/\n/g, " ");
+
+    const wrapText = (text, maxWidth, font, fontSize) => {
+      const sanitizedText = sanitizeText(text);
+      const words = sanitizedText.split(" ");
+      let lines = [];
+      let currentLine = words[0];
+
+      for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        const width = font.widthOfTextAtSize(
+          currentLine + " " + word,
+          fontSize
+        );
+        if (width < maxWidth) {
+          currentLine += " " + word;
+        } else {
+          lines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      lines.push(currentLine);
+      return lines;
+    };
+
+    const drawText = (textElements, font, fontSize, options = {}) => {
+      const { x = margin, color = rgb(0, 0, 0) } = options;
+      let xPosition = x;
+
+      textElements.forEach((element) => {
+        const { text, isBold, isItalic } = element;
+        const currentFont = isBold ? boldFont : isItalic ? italicFont : font;
+
+        const words = wrapText(text, maxWidth, currentFont, fontSize);
+        words.forEach((line) => {
+          if (yPosition < margin + lineHeight) {
+            page = pdfDoc.addPage([595, 842]); // Add new page if necessary
+            yPosition = height - margin;
+          }
+
+          page.drawText(line, {
+            x: xPosition,
+            y: yPosition,
+            size: fontSize,
+            font: currentFont,
+            color: color,
+          });
+          yPosition -= lineHeight;
+        });
+      });
+    };
+
+    const drawHeading = (heading, fontSize, options = {}) => {
+      const { align = "left", color = rgb(0, 0, 0) } = options;
+      const headingWidth = boldFont.widthOfTextAtSize(heading, fontSize);
+      let xPosition = margin;
+
+      if (align === "center") {
+        xPosition = (width - headingWidth) / 2;
+      } else if (align === "right") {
+        xPosition = width - margin - headingWidth;
+      }
+
+      page.drawText(heading, {
+        x: xPosition,
+        y: yPosition,
+        size: fontSize,
+        font: boldFont,
+        color: color,
+      });
+
+      yPosition -= lineHeight * 1.5;
+    };
+
+    // Start generating the content for the PDF
+
+    // Drawing Bio
+    drawHeading(
+      `${modifiedResume.bio.firstName} ${modifiedResume.bio.lastName}`,
+      fontSize + 2,
+      { align: "left", color: rgb(0, 0, 0) }
+    );
+    drawText(
+      [{ text: `Email: ${modifiedResume.bio.email}`, isBold: false }],
+      font,
+      fontSize
+    );
+    drawText(
+      [{ text: `Phone: ${modifiedResume.bio.phoneNumber}`, isBold: false }],
+      font,
+      fontSize
+    );
+    drawText(
+      [{ text: `Location: ${modifiedResume.bio.location}`, isBold: false }],
+      font,
+      fontSize
+    );
+
+    yPosition -= lineHeight * 2;
+
+    // Drawing Summary
+    drawHeading("Summary", fontSize + 2, { align: "left" });
+    const summaryLines = wrapText(
+      modifiedResume.summary,
+      maxWidth,
+      font,
+      fontSize
+    );
+    summaryLines.forEach((line) => drawText([{ text: line }], font, fontSize));
+    yPosition -= lineHeight * 2;
+
+    // Drawing Skills
+    drawHeading("Skills", fontSize + 2, { align: "left" });
+    const skillsText = modifiedResume.skills.join(", ");
+    drawText([{ text: skillsText }], font, fontSize);
+    yPosition -= lineHeight * 2;
+
+    // Drawing Experiences
+    drawHeading("Experience", fontSize + 2, { align: "left" });
+    modifiedResume.experiences.forEach((exp) => {
+      drawHeading(`${exp.companyName} - ${exp.roleTitle}`, fontSize);
+      exp.experienceDetails.forEach((detail) => {
+        const wrappedDetails = wrapText(detail, maxWidth, font, fontSize);
+        wrappedDetails.forEach((line) =>
+          drawText([{ text: line }], font, fontSize)
+        );
+      });
+      yPosition -= lineHeight * 2;
+    });
+
+    // Drawing Education
+    drawHeading("Education", fontSize + 2, { align: "left" });
+    modifiedResume.education.forEach((edu) => {
+      drawHeading(`${edu.institution} - ${edu.degreeType}`, fontSize);
+      yPosition -= lineHeight * 2;
+    });
+
+    // Saving PDF
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([pdfBytes], { type: "application/pdf" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${modifiedResume.bio.lastName}_Resume.pdf`;
+    link.click();
   };
 
   const handleChatSubmit = async (prompt) => {
@@ -158,14 +357,42 @@ const CreateCustomResume = () => {
                 value={typeof resume === "string" ? resume : resume.name || ""}
                 onChange={(e) => setResume(e.target.value)}
               />
-              <Button
-                variant="contained"
-                component="label"
-                sx={{ marginTop: "1rem" }}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  width: "100%",
+                }}
               >
-                Upload Resume
-                <input type="file" hidden onChange={handleFileUpload} />
-              </Button>
+                <Button
+                  variant="contained"
+                  component="label"
+                  sx={{
+                    marginTop: "1rem",
+                    padding: "0.5rem 1rem",
+                    fontSize: "0.875rem",
+                    minWidth: "120px",
+                  }}
+                >
+                  Upload Resume
+                  <input type="file" hidden onChange={handleFileUpload} />
+                </Button>
+                &nbsp;
+                <Button
+                  variant="contained"
+                  component="label"
+                  sx={{
+                    marginTop: "1rem",
+                    padding: "0.5rem 1rem",
+                    fontSize: "0.875rem",
+                    minWidth: "120px",
+                  }}
+                  onClick={handleResumeModification}
+                >
+                  Create a Custom Resume
+                  {/* <input type="file" hidden onChange={handleFileUpload} /> */}
+                </Button>
+              </div>
             </Paper>
           </Grid>
 
@@ -209,7 +436,7 @@ const CreateCustomResume = () => {
                     {/* Response styling */}
                     <div style={{ display: "flex", alignItems: "flex-start" }}>
                       <FlutterDashIcon
-                        // style={{ color: "#00796b", marginRight: "0.5rem" }}
+                      // style={{ color: "#00796b", marginRight: "0.5rem" }}
                       />
                       <div
                         style={{
