@@ -64,7 +64,7 @@ const CreateCustomResume = () => {
 
   const generatePDF = async (modifiedResume) => {
     console.log("I am Modified Resume entering generate PDF", modifiedResume);
-    // Check if the modified resume has the necessary data
+
     if (!modifiedResume.bio) {
       console.error("Missing Bio");
       return;
@@ -76,7 +76,6 @@ const CreateCustomResume = () => {
     let page = pdfDoc.addPage([595, 842]); // A4 size in points: 595x842
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    const italicFont = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
     const fontSize = 12;
     let yPosition = 800;
     const lineHeight = 14;
@@ -115,7 +114,7 @@ const CreateCustomResume = () => {
 
       textElements.forEach((element) => {
         const { text, isBold, isItalic } = element;
-        const currentFont = isBold ? boldFont : isItalic ? italicFont : font;
+        const currentFont = isBold ? boldFont : font;
 
         const words = wrapText(text, maxWidth, currentFont, fontSize);
         words.forEach((line) => {
@@ -158,8 +157,6 @@ const CreateCustomResume = () => {
       yPosition -= lineHeight * 1.5;
     };
 
-    // Start generating the content for the PDF
-
     // Drawing Bio
     drawHeading(
       `${modifiedResume.bio.firstName} ${modifiedResume.bio.lastName}`,
@@ -176,11 +173,24 @@ const CreateCustomResume = () => {
       font,
       fontSize
     );
-    drawText(
-      [{ text: `Location: ${modifiedResume.bio.location}`, isBold: false }],
-      font,
-      fontSize
-    );
+    modifiedResume.bio.location &&
+      drawText(
+        [{ text: `Location: ${modifiedResume.bio.location}`, isBold: false }],
+        font,
+        fontSize
+      );
+    modifiedResume.bio.linkedin &&
+      drawText(
+        [{ text: `Location: ${modifiedResume.bio.linkedin}`, isBold: false }],
+        font,
+        fontSize
+      );
+    modifiedResume.bio.github &&
+      drawText(
+        [{ text: `Location: ${modifiedResume.bio.github}`, isBold: false }],
+        font,
+        fontSize
+      );
 
     yPosition -= lineHeight * 2;
 
@@ -201,12 +211,19 @@ const CreateCustomResume = () => {
     drawText([{ text: skillsText }], font, fontSize);
     yPosition -= lineHeight * 2;
 
-    // Drawing Experiences
+    // Drawing Experiences with bullet points
     drawHeading("Experience", fontSize + 2, { align: "left" });
     modifiedResume.experiences.forEach((exp) => {
       drawHeading(`${exp.companyName} - ${exp.roleTitle}`, fontSize);
+      drawHeading(`${exp.startDate} - ${exp.endDate}`, fontSize);
       exp.experienceDetails.forEach((detail) => {
-        const wrappedDetails = wrapText(detail, maxWidth, font, fontSize);
+        // Adding a bullet point before each experience detail
+        const wrappedDetails = wrapText(
+          `• ${detail}`,
+          maxWidth,
+          font,
+          fontSize
+        );
         wrappedDetails.forEach((line) =>
           drawText([{ text: line }], font, fontSize)
         );
@@ -214,11 +231,30 @@ const CreateCustomResume = () => {
       yPosition -= lineHeight * 2;
     });
 
-    // Drawing Education
     drawHeading("Education", fontSize + 2, { align: "left" });
+
     modifiedResume.education.forEach((edu) => {
       drawHeading(`${edu.institution} - ${edu.degreeType}`, fontSize);
+      edu.educationDetails.forEach((detail) => {
+        // Adding a bullet point before each experience detail
+        const wrappedDetails = wrapText(
+          `• ${detail}`,
+          maxWidth,
+          font,
+          fontSize
+        );
+        wrappedDetails.forEach((line) =>
+          drawText([{ text: line }], font, fontSize)
+        );
+      });
+
+
+      // Adjust yPosition and check if a new page is needed for the next entry
       yPosition -= lineHeight * 2;
+      if (yPosition < margin + lineHeight) {
+        page = pdfDoc.addPage([595, 842]); // Add new page if necessary
+        yPosition = height - margin;
+      }
     });
 
     // Saving PDF

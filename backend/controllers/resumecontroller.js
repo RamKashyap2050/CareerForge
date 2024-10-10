@@ -437,15 +437,21 @@ const parsenadcreatecustomresume = expressAsyncHandler(async (req, res) => {
 
     // Updated structured prompt
     const prompt = `
-    I have provided a job description and a resume. Please modify the resume by:
+    I have provided a job description and a resume. Please modify the resume by, you are a resume buidler who is building resumes based of the Job Description and User Resume to beat ATS(Application Tracking System):
 
-    1. **Updating the skills section**: Match the skills from the resume to the skills in the job description, adding relevant skills from the job description that the resume might not have. For example, if the job description requires "TSX" and the resume mentions "Angular", replace "Angular" with or add "TSX" where relevant.
+    1. **Updating the skills section**: Add the skills from the resume to the skills in the job description, adding relevant skills from the job description that the resume might not have. For example, if the job description requires "TSX" and the resume mentions "Angular", replace "Angular" with or add "TSX" where relevant, Do this while keeping skills User gives from his resume.
     
-    2. **Updating the experience points**: Modify the experience to make it impactful, by adding relevant keywords from the job description. For Example If the resume mentions 6 years of experience but the job description asks for 5 years, adjust the wording to say "5+ years" of experience.
-
-    3. **Modifying the summary**: Update the professional summary to include job-relevant keywords, especially those from the skills section.
+     2.**Updating the experience points**: Modify the experience section to reflect the required skills and impactful achievements from the job description. For each role in the experience section:
+    - Add **job-relevant keywords** from the job description to the corresponding experience points. For example, if the job description mentions "microservices," ensure it is included where applicable.
+    - Adjust experience details to make them **more impactful** by highlighting accomplishments, metrics (e.g., "increased performance by 20%"), or responsibilities that reflect leadership or expertise.
+    - Ensure that the experience duration aligns with the job description. For example, if the resume mentions "6 years of experience" but the job description asks for "5 years," adjust the wording to "5+ years of experience."
+    - Include any other **relevant technologies or methodologies** from the job description in the experience points.
+    - **Preserve the start date and end date** for each role as they are important for the resume structure.
+3. **Modifying the summary**: Update the professional summary to include job-relevant keywords, especially those from the skills section. **Do not mention any specific company names or roles**. The summary should focus on the candidate's skills, expertise, and experience in a more general sense, without referencing specific companies.
 
         4. **Maintaining Bio Information**: Please keep the name, email, phone number, and other contact information unchanged, but include them in the final output.
+
+        5. **Updating Education Points**: Create Relevant Education points according to the education they select, for example if user selects Bachelors in Computer Science, Suggest Something related to GPA or maybe related to their field of Study
     Return the output in the following structured JSON format:
     {
    "bio": {
@@ -472,7 +478,8 @@ const parsenadcreatecustomresume = expressAsyncHandler(async (req, res) => {
           "institution": "<institution name>",
           "degreeType": "<degree type>",
           "startDate": "<start date>",
-          "endDate": "<end date>"
+          "endDate": "<end date>",
+                    "educationDetails": ["<updated education points>"]
         }
       ]
     }
