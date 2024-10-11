@@ -36,15 +36,15 @@ const ResumeBio = sequelize.define(
     },
     GithubLink: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     LinkedInLink: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     WebsiteLink: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     Location: {
       type: DataTypes.STRING,
@@ -56,19 +56,5 @@ const ResumeBio = sequelize.define(
     tableName: "ResumeBio",
   }
 );
-
-// sequelize
-//   .sync()
-//   .then(() => {
-//     console.log(
-//       "Resume Bio table has been successfully created, if one doesn't exist"
-//     );
-//   })
-//   .catch((error) =>
-//     console.error(
-//       "This error occurred while syncing the Resume Bio model:",
-//       error
-//     )
-//   );
 
 module.exports = ResumeBio;
