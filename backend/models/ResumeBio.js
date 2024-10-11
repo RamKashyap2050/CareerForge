@@ -36,15 +36,15 @@ const ResumeBio = sequelize.define(
     },
     GithubLink: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     LinkedInLink: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     WebsiteLink: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
     Location: {
       type: DataTypes.STRING,
