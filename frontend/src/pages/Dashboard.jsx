@@ -676,11 +676,34 @@ const Dashboard = () => {
           `<p>Phone: ${resumeData.bio.PhoneNumber} | Email: ${resumeData.bio.Email}</p>`
         )
       );
-      parseHtmlAndDraw(
-        parseHtml(
-          `<p>LinkedIn: ${resumeData.bio.LinkedInLink} | GitHub: ${resumeData.bio.GithubLink}| Website: ${resumeData.bio.WebsiteLink} </p>`
-        )
-      );
+      let linksHtml = "<p>"; // Start of the paragraph
+
+      // Check and append LinkedIn link if it exists
+      if (resumeData.bio.LinkedInLink) {
+        linksHtml += `LinkedIn: ${resumeData.bio.LinkedInLink}`;
+      }
+
+      // Check and append GitHub link if it exists, with separator if LinkedIn exists
+      if (resumeData.bio.GithubLink) {
+        if (resumeData.bio.LinkedInLink) {
+          linksHtml += " | "; // Separator if LinkedIn was printed
+        }
+        linksHtml += `GitHub: ${resumeData.bio.GithubLink}`;
+      }
+
+      // Check and append Website link if it exists, with separator if either LinkedIn or GitHub exists
+      if (resumeData.bio.WebsiteLink) {
+        if (resumeData.bio.LinkedInLink || resumeData.bio.GithubLink) {
+          linksHtml += " | "; // Separator if LinkedIn or GitHub was printed
+        }
+        linksHtml += `Website: ${resumeData.bio.WebsiteLink}`;
+      }
+
+      linksHtml += "</p>"; // End of the paragraph
+
+      // Now pass the dynamically created HTML string to your parseHtml function
+      parseHtmlAndDraw(parseHtml(linksHtml));
+
       parseHtmlAndDraw(
         parseHtml(`<p>Location: ${resumeData.bio.Location}</p>`)
       );

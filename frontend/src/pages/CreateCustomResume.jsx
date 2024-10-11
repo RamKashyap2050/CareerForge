@@ -181,17 +181,23 @@ const CreateCustomResume = () => {
       );
     modifiedResume.bio.linkedin &&
       drawText(
-        [{ text: `Location: ${modifiedResume.bio.linkedin}`, isBold: false }],
+        [{ text: `LinkedIn: ${modifiedResume.bio.linkedin}`, isBold: false }],
         font,
         fontSize
       );
     modifiedResume.bio.github &&
       drawText(
-        [{ text: `Location: ${modifiedResume.bio.github}`, isBold: false }],
+        [{ text: `GitHub: ${modifiedResume.bio.github}`, isBold: false }],
         font,
         fontSize
       );
 
+    modifiedResume.bio.website &&
+      drawText(
+        [{ text: `Website: ${modifiedResume.bio.website}`, isBold: false }],
+        font,
+        fontSize
+      );
     yPosition -= lineHeight * 2;
 
     // Drawing Summary
@@ -234,7 +240,9 @@ const CreateCustomResume = () => {
     drawHeading("Education", fontSize + 2, { align: "left" });
 
     modifiedResume.education.forEach((edu) => {
-      drawHeading(`${edu.institution} - ${edu.degreeType}`, fontSize);
+      drawHeading(`${edu.institution}`, fontSize);
+      drawHeading(`${edu.degreeType}`, fontSize);
+
       edu.educationDetails.forEach((detail) => {
         // Adding a bullet point before each experience detail
         const wrappedDetails = wrapText(
@@ -247,7 +255,6 @@ const CreateCustomResume = () => {
           drawText([{ text: line }], font, fontSize)
         );
       });
-
 
       // Adjust yPosition and check if a new page is needed for the next entry
       yPosition -= lineHeight * 2;
