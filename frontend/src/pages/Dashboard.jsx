@@ -18,6 +18,7 @@ import {
 import EducationStep from "../Components/EducationStep";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import axios from "axios";
+import Footer from "../Components/Footer";
 const Dashboard = () => {
   // Use this function in your component or trigger it with a button click
 
@@ -984,6 +985,7 @@ const Dashboard = () => {
           </Grid>
         </Grid>
       )}
+      <Footer/>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import Navbar from "../Components/Navbar";
 import FlutterDashIcon from "@mui/icons-material/FlutterDash";
 import axios from "axios";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import Footer from "../Components/Footer";
 
 const RootContainer = styled(Box)(({ theme }) => ({
   padding: "2rem",
@@ -594,6 +595,7 @@ const CreateCustomResume = () => {
           </Grid>
         </Grid>
       </RootContainer>
+      <Footer />
     </>
   );
 };

@@ -33,6 +33,9 @@ const Navbar = () => {
   const handleDashboard = () => {
     navigate("/dashboard");
   };
+  const handleJobListings = () => {
+    navigate("/joblistings")
+  }
   const styles = {
     appBar: {
       backgroundColor: "#00796b",
@@ -118,6 +121,9 @@ const Navbar = () => {
         </div>
         <div style={styles.menuItem} onClick={handleCustomResume}>
           Create Custom Resume
+        </div>
+        <div style={styles.menuItem} onClick={handleJobListings}>
+          View Job Listings
         </div>
         <div style={styles.menuItem} onClick={handleLogout}>
           Logout
