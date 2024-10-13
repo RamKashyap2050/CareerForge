@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios"; // Import axios for API calls
 import {
   Box,
   TextField,
@@ -14,7 +15,7 @@ import {
   FormGroup,
 } from "@mui/material";
 
-const Filters = ({ onFilterChange }) => {
+const Filters = ({ onJobListingsFetched }) => {
   const [jobTitle, setJobTitle] = useState("");
   const [location, setLocation] = useState("");
   const [jobType, setJobType] = useState("");
@@ -24,7 +25,7 @@ const Filters = ({ onFilterChange }) => {
   const [remote, setRemote] = useState(false);
   const [skills, setSkills] = useState([]);
 
-  const handleFilterChange = () => {
+  const handleFilterChange = async () => {
     const filters = {
       jobTitle,
       location,
@@ -35,7 +36,14 @@ const Filters = ({ onFilterChange }) => {
       remote,
       skills,
     };
-    onFilterChange(filters);
+
+    try {
+      const response = await axios.post(`/scrapping/scrape-jobs`, filters); // Call backend API
+      console.log(response.data);
+      // onJobListingsFetched(response.data.data); // Pass the job listings to parent component
+    } catch (error) {
+      console.error("Error fetching job listings:", error);
+    }
   };
 
   return (

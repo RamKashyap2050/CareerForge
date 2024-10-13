@@ -14,7 +14,7 @@ const pg = require("pg");
 const Session = require("./models/Session"); // The Session model
 const fileupload = require("express-fileupload");
 const { applyAssociations } = require("./models/associations");
-
+const ScrapperRoutes = require("../backend/routes/ScrapperRoutes");
 const cookieParser = require("cookie-parser");
 
 app.use(cors());
@@ -90,6 +90,8 @@ app.use(passport.session());
 
 app.use("/users", userRoutes);
 app.use("/resume", resumeRoutes);
+app.use("/scrapping", ScrapperRoutes);
+
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
