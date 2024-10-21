@@ -17,7 +17,7 @@ async function scrapeIndeedJobs(
   let jobs = [];
 
   for (let pageNum = 0; pageNum < pagesToScrape; pageNum++) {
-    const searchURL = `https://www.indeed.com/jobs?q=${encodeURIComponent(
+    const searchURL = `https://ca.indeed.com/jobs?q=${encodeURIComponent(
       searchQuery
     )}&l=${encodeURIComponent(location)}&start=${pageNum * 10}`;
 
@@ -59,10 +59,16 @@ async function scrapeIndeedJobs(
             ? locationElement.innerText.trim()
             : "No location";
           const url = urlElement
-            ? `https://www.indeed.com${urlElement.getAttribute("href")}`
+            ? `https://ca.indeed.com${urlElement.getAttribute("href")}`
             : "No URL";
 
-          jobListings.push({ title, company, location, url });
+          jobListings.push({
+            title,
+            company,
+            location,
+            url,
+            jobSite: "Indeed", // Adding the job site
+          });
         });
 
         return jobListings;
@@ -85,5 +91,78 @@ async function scrapeIndeedJobs(
   return jobs;
 }
 
+// Function to scrape detailed job info from a URL
+async function scrapeJobDetailsFromUrl(jobUrl) {
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
+
+  // Set a User-Agent to avoid being blocked
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
+  );
+
+  // Go to the job URL
+  await page.goto(jobUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
+
+  // Scrape the detailed information from the page
+  const jobDetails = await page.evaluate(() => {
+    // Job Description
+    const jobDescriptionElement = document.querySelector("#jobDescriptionText");
+    const jobDescription = jobDescriptionElement
+      ? jobDescriptionElement.innerText.trim()
+      : "No job description available.";
+
+    // Skills
+    const skillsElement = document.querySelector("[aria-label='Skills'] h3");
+    const skills = skillsElement
+      ? skillsElement.innerText.trim()
+      : "No skills information.";
+
+    // Pay information
+    const payElement = document.querySelector("[aria-label='Pay'] ul li");
+    const pay = payElement
+      ? payElement.innerText.trim()
+      : "No salary information.";
+
+    // Benefits
+    const benefitsElement = document.querySelector("#benefits ul");
+    const benefits = benefitsElement
+      ? Array.from(benefitsElement.querySelectorAll("li")).map((li) =>
+          li.innerText.trim()
+        )
+      : "No benefits information.";
+
+    // Job Type
+    const jobTypeElement = document.querySelector(
+      "[aria-label='Job type'] ul li"
+    );
+    const jobType = jobTypeElement
+      ? jobTypeElement.innerText.trim()
+      : "No job type information.";
+
+    // Location
+    const locationElement = document.querySelector("#jobLocationText div");
+    const location = locationElement
+      ? locationElement.innerText.trim()
+      : "No location provided.";
+
+    // Return the scraped data
+    return {
+      jobDescription,
+      skills,
+      pay,
+      benefits,
+      jobType,
+      location,
+    };
+  });
+
+  // Close the browser
+  await browser.close();
+
+  // Return the scraped job details
+  return jobDetails;
+}
+
 // Exporting function for reuse in other modules
-module.exports = { scrapeIndeedJobs };
+module.exports = { scrapeIndeedJobs, scrapeJobDetailsFromUrl };

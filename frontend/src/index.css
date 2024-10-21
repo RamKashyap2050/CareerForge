@@ -15,7 +15,15 @@ overflow-x: hidden;
     scrollbar-width: none;  /* Firefox */
   }
   
-
+  * {
+    overflow: scroll; /* Or auto, depending on your use case */
+    scrollbar-width: none; /* For Firefox */
+    -ms-overflow-style: none;  /* For IE and Edge */
+  }
+  
+  *::-webkit-scrollbar {
+    display: none; /* For Chrome, Safari, and Opera */
+  }
   /* In your global CSS file, e.g., App.css or styles.css */
 @media print {
   #resumeContent {
