@@ -77,7 +77,7 @@ async function scrapeGlassdoorJobs(searchQuery, location = "Remote", pagesToScra
 
 async function scrapeGlassdoorJobDetails(jobUrl) {
   const isProduction = process.env.NODE_ENV === 'production';
-
+  console.log(jobUrl)
   const browser = await puppeteer.launch({
     args: isProduction ? chromium.args : [],
     executablePath: isProduction ? await chromium.executablePath : undefined,

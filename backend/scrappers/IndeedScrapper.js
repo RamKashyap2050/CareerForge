@@ -48,7 +48,7 @@ async function scrapeIndeedJobs(searchQuery, location = "Remote", pagesToScrape 
           const location = locationElement ? locationElement.innerText.trim() : "No location";
           const url = urlElement ? `https://ca.indeed.com${urlElement.getAttribute("href")}` : "No URL";
 
-          jobListings.push({ title, company, location, url });
+          jobListings.push({ title, company, location, url, jobSite: "Indeed" });
         });
 
         return jobListings;
