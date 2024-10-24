@@ -11,6 +11,7 @@ async function scrapeIndeedJobs(searchQuery, location = "Remote", pagesToScrape 
       : undefined, // Use default executable for local development
     headless: isProduction ? chromium.headless : false, // Headless only in production
     ignoreHTTPSErrors: true,
+    ignoreDefaultArgs: ['--disable-extensions']
   });
 
   const page = await browser.newPage();

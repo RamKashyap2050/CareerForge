@@ -297,35 +297,13 @@ const CreateCustomResume = () => {
         },
       });
 
-      const fullResponse = response.data.message;
       const newChatEntry = {
         prompt,
-        response: "", // Initially, the response is empty
+        response: response.data.message,
       };
 
       setChatHistory((prevHistory) => [...prevHistory, newChatEntry]);
-
-      // Simulate typing effect
-      let currentIndex = 0;
-
-      const typeResponse = () => {
-        setChatHistory((prevHistory) => {
-          const updatedChat = [...prevHistory];
-          const currentChat = updatedChat[updatedChat.length - 1]; // Get the last chat entry
-          currentChat.response += fullResponse[currentIndex]; // Append one character at a time
-          return updatedChat;
-        });
-
-        currentIndex++;
-
-        if (currentIndex < fullResponse.length) {
-          setTimeout(typeResponse, 30); // Adjust typing speed here (30ms per character)
-        } else {
-          setLoading(false); // Stop the loading animation once typing is complete
-        }
-      };
-
-      setTimeout(typeResponse, 500); // Add a slight delay before starting the typing effect
+      setLoading(false); // Stop the loading animation
       setuserinput(""); // Clear the input field after sending
     } catch (error) {
       console.error("Error submitting chat:", error);
