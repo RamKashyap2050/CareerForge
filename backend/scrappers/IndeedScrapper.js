@@ -3,11 +3,18 @@ const puppeteer = process.env.NODE_ENV === 'production' ? require('puppeteer-cor
 
 async function scrapeIndeedJobs(searchQuery, location = "Remote", pagesToScrape = 2) {
   const isProduction = process.env.NODE_ENV === 'production';
-
+  let executablePath;
+  if (isProduction) {
+    // Ensure that chromium is resolved correctly
+    executablePath = await chromium.executablePath;
+    if (!executablePath) {
+      throw new Error("Chromium executable path is not available in production.");
+    }
+  }
   const browser = await puppeteer.launch({
     args: isProduction ? chromium.args : [],
     executablePath: isProduction
-      ? await chromium.executablePath
+      ? executablePath
       : undefined, // Use default executable for local development
     headless: isProduction ? chromium.headless : false, // Headless only in production
     ignoreHTTPSErrors: true,
