@@ -8,7 +8,7 @@ const puppeteer =
 async function scrapeIndeedJobs(
   searchQuery,
   location = "Remote",
-  pagesToScrape = 2
+  pagesToScrape = 1
 ) {
   const isProduction = process.env.NODE_ENV === "production";
   let executablePath;
