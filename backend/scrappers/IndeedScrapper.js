@@ -1,24 +1,39 @@
-const chromium = process.env.NODE_ENV === 'production' ? require('@sparticuz/chromium') : null;
-const puppeteer = process.env.NODE_ENV === 'production' ? require('puppeteer-core') : require('puppeteer');
+const chromium =
+  process.env.NODE_ENV === "production" ? require("@sparticuz/chromium") : null;
+const puppeteer =
+  process.env.NODE_ENV === "production"
+    ? require("puppeteer-core")
+    : require("puppeteer");
 
-async function scrapeIndeedJobs(searchQuery, location = "Remote", pagesToScrape = 2) {
-  const isProduction = process.env.NODE_ENV === 'production';
+async function scrapeIndeedJobs(
+  searchQuery,
+  location = "Remote",
+  pagesToScrape = 2
+) {
+  const isProduction = process.env.NODE_ENV === "production";
   let executablePath;
+
   if (isProduction) {
-    // Ensure that chromium is resolved correctly
-    executablePath = await chromium.executablePath;
-    if (!executablePath) {
-      throw new Error("Chromium executable path is not available in production.");
+    // Ensure chromium executable path is correctly resolved
+    executablePath = chromium.executablePath;
+
+    // Log the executable path for debugging in Vercel logs
+    console.log("Chromium executable path: ", executablePath);
+
+    if (typeof executablePath !== "string") {
+      console.error(
+        "Chromium executable path is not a valid string. Received: ",
+        executablePath
+      );
+      throw new Error("Chromium executable path is not a valid string.");
     }
   }
   const browser = await puppeteer.launch({
     args: isProduction ? chromium.args : [],
-    executablePath: isProduction
-      ? executablePath
-      : undefined, // Use default executable for local development
+    executablePath: isProduction ? executablePath : undefined, // Use default executable for local development
     headless: isProduction ? chromium.headless : false, // Headless only in production
     ignoreHTTPSErrors: true,
-    ignoreDefaultArgs: ['--disable-extensions']
+    ignoreDefaultArgs: ["--disable-extensions"],
   });
 
   const page = await browser.newPage();
@@ -30,7 +45,9 @@ async function scrapeIndeedJobs(searchQuery, location = "Remote", pagesToScrape 
   let jobs = [];
 
   for (let pageNum = 0; pageNum < pagesToScrape; pageNum++) {
-    const searchURL = `https://ca.indeed.com/jobs?q=${encodeURIComponent(searchQuery)}&l=${encodeURIComponent(location)}&start=${pageNum * 10}`;
+    const searchURL = `https://ca.indeed.com/jobs?q=${encodeURIComponent(
+      searchQuery
+    )}&l=${encodeURIComponent(location)}&start=${pageNum * 10}`;
 
     console.log(`Navigating to: ${searchURL}`);
     try {
@@ -39,24 +56,46 @@ async function scrapeIndeedJobs(searchQuery, location = "Remote", pagesToScrape 
         timeout: 60000,
       });
 
-      await page.waitForSelector("#mosaic-provider-jobcards .job_seen_beacon", { timeout: 10000 });
+      await page.waitForSelector("#mosaic-provider-jobcards .job_seen_beacon", {
+        timeout: 10000,
+      });
 
       const jobsOnPage = await page.evaluate(() => {
-        const jobElements = document.querySelectorAll("#mosaic-provider-jobcards .job_seen_beacon");
+        const jobElements = document.querySelectorAll(
+          "#mosaic-provider-jobcards .job_seen_beacon"
+        );
         let jobListings = [];
 
         jobElements.forEach((job) => {
           const titleElement = job.querySelector("h2.jobTitle span");
-          const companyElement = job.querySelector("span[data-testid='company-name']");
-          const locationElement = job.querySelector("[data-testid='text-location']");
+          const companyElement = job.querySelector(
+            "span[data-testid='company-name']"
+          );
+          const locationElement = job.querySelector(
+            "[data-testid='text-location']"
+          );
           const urlElement = job.querySelector("h2.jobTitle a");
 
-          const title = titleElement ? titleElement.innerText.trim() : "No title";
-          const company = companyElement ? companyElement.innerText.trim() : "No company name";
-          const location = locationElement ? locationElement.innerText.trim() : "No location";
-          const url = urlElement ? `https://ca.indeed.com${urlElement.getAttribute("href")}` : "No URL";
+          const title = titleElement
+            ? titleElement.innerText.trim()
+            : "No title";
+          const company = companyElement
+            ? companyElement.innerText.trim()
+            : "No company name";
+          const location = locationElement
+            ? locationElement.innerText.trim()
+            : "No location";
+          const url = urlElement
+            ? `https://ca.indeed.com${urlElement.getAttribute("href")}`
+            : "No URL";
 
-          jobListings.push({ title, company, location, url, jobSite: "Indeed" });
+          jobListings.push({
+            title,
+            company,
+            location,
+            url,
+            jobSite: "Indeed",
+          });
         });
 
         return jobListings;
@@ -74,7 +113,7 @@ async function scrapeIndeedJobs(searchQuery, location = "Remote", pagesToScrape 
 }
 
 async function scrapeJobDetailsFromUrl(jobUrl) {
-  const isProduction = process.env.NODE_ENV === 'production';
+  const isProduction = process.env.NODE_ENV === "production";
 
   const browser = await puppeteer.launch({
     args: isProduction ? chromium.args : [],
@@ -92,22 +131,38 @@ async function scrapeJobDetailsFromUrl(jobUrl) {
 
   const jobDetails = await page.evaluate(() => {
     const jobDescriptionElement = document.querySelector("#jobDescriptionText");
-    const jobDescription = jobDescriptionElement ? jobDescriptionElement.innerText.trim() : "No job description available.";
+    const jobDescription = jobDescriptionElement
+      ? jobDescriptionElement.innerText.trim()
+      : "No job description available.";
 
     const skillsElement = document.querySelector("[aria-label='Skills'] h3");
-    const skills = skillsElement ? skillsElement.innerText.trim() : "No skills information.";
+    const skills = skillsElement
+      ? skillsElement.innerText.trim()
+      : "No skills information.";
 
     const payElement = document.querySelector("[aria-label='Pay'] ul li");
-    const pay = payElement ? payElement.innerText.trim() : "No salary information.";
+    const pay = payElement
+      ? payElement.innerText.trim()
+      : "No salary information.";
 
     const benefitsElement = document.querySelector("#benefits ul");
-    const benefits = benefitsElement ? Array.from(benefitsElement.querySelectorAll("li")).map((li) => li.innerText.trim()) : "No benefits information.";
+    const benefits = benefitsElement
+      ? Array.from(benefitsElement.querySelectorAll("li")).map((li) =>
+          li.innerText.trim()
+        )
+      : "No benefits information.";
 
-    const jobTypeElement = document.querySelector("[aria-label='Job type'] ul li");
-    const jobType = jobTypeElement ? jobTypeElement.innerText.trim() : "No job type information.";
+    const jobTypeElement = document.querySelector(
+      "[aria-label='Job type'] ul li"
+    );
+    const jobType = jobTypeElement
+      ? jobTypeElement.innerText.trim()
+      : "No job type information.";
 
     const locationElement = document.querySelector("#jobLocationText div");
-    const location = locationElement ? locationElement.innerText.trim() : "No location provided.";
+    const location = locationElement
+      ? locationElement.innerText.trim()
+      : "No location provided.";
 
     return {
       jobDescription,
