@@ -1,4 +1,4 @@
-const chromium = process.env.NODE_ENV === 'production' ? require('chrome-aws-lambda') : null;
+const chromium = process.env.NODE_ENV === 'production' ? require('@sparticuz/chromium') : null;
 const puppeteer = process.env.NODE_ENV === 'production' ? require('puppeteer-core') : require('puppeteer');
 
 async function scrapeIndeedJobs(searchQuery, location = "Remote", pagesToScrape = 2) {

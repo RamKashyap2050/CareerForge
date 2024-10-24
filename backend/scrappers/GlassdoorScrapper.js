@@ -1,5 +1,5 @@
 const chromium =
-  process.env.NODE_ENV === "production" ? require("chrome-aws-lambda") : null;
+  process.env.NODE_ENV === "production" ? require("@sparticuz/chromium") : null;
 const puppeteer =
   process.env.NODE_ENV === "production"
     ? require("puppeteer-core")
@@ -18,6 +18,7 @@ async function scrapeGlassdoorJobs(
     executablePath: isProduction ? await chromium.executablePath : undefined, // Use default executable in development
     headless: isProduction ? chromium.headless : false, // Use non-headless in dev for debugging
     ignoreHTTPSErrors: true,
+    ignoreDefaultArgs: ['--disable-extensions']
   });
 
   const page = await browser.newPage();
