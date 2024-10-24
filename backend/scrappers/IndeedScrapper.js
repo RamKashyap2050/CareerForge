@@ -15,7 +15,7 @@ async function scrapeIndeedJobs(
 
   if (isProduction) {
     // Ensure chromium executable path is correctly resolved
-    executablePath = chromium.executablePath;
+    executablePath = await chromium.executablePath();
 
     // Log the executable path for debugging in Vercel logs
     console.log("Chromium executable path: ", executablePath);
