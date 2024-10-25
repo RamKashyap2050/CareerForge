@@ -1,19 +1,15 @@
 {
-    "builds": [
-        {
-            "src": "backend/server.js",
-            "use": "@vercel/node"
+    "functions": {
+        "backend/server.js": {
+            "runtime": "@vercel/node",
+            "maxDuration": 60, 
+            "memory": 1024  
         }
-    ],
+    },
     "routes": [
         {
             "src": "/(.*)",
             "dest": "backend/server.js"
         }
-    ],
-    "functions": {
-        "backend/server.js": {
-            "maxDuration": 60 
-        }
-    }
+    ]
 }
