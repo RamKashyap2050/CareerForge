@@ -47,7 +47,7 @@ async function scrapeIndeedJobs(
   for (let pageNum = 0; pageNum < pagesToScrape; pageNum++) {
     const searchURL = `https://ca.indeed.com/jobs?q=${encodeURIComponent(
       searchQuery
-    )}&l=${encodeURIComponent(location)}&start=${pageNum * 10}`;
+    )}&l=${encodeURIComponent(location)}&start=${pageNum * 2}`;
 
     console.log(`Navigating to: ${searchURL}`);
     try {
