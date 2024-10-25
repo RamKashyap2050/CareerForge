@@ -57,7 +57,7 @@ async function scrapeIndeedJobs(
       });
 
       await page.waitForSelector("#mosaic-provider-jobcards .job_seen_beacon", {
-        timeout: 10000,
+        timeout: 30000,
       });
 
       const jobsOnPage = await page.evaluate(() => {
