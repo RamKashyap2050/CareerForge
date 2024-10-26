@@ -14,6 +14,7 @@ function applyAssociations() {
 
   // Resume and ResumeBio (One-to-One)
   Resume.belongsTo(ResumeBio, { foreignKey: "ResumeBio", as: "resumeBio", onDelete: "CASCADE" });
+  ResumeBio.belongsTo(Resume, { foreignKey: "resumeId", as: "resume", onDelete: "CASCADE" });
 
   // Resume and ResumeSummary (One-to-One)
   Resume.belongsTo(ResumeSummary, { foreignKey: "ResumeSummary", as: "resumeSummary", onDelete: "CASCADE" });
