@@ -4,7 +4,13 @@ const puppeteer =
   process.env.NODE_ENV === "production"
     ? require("puppeteer-core")
     : require("puppeteer");
+const isProduction = process.env.NODE_ENV === "production";
 
+// Apply stealth plugin only in production
+if (isProduction) {
+  const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+  puppeteer.use(StealthPlugin());
+}
 async function scrapeIndeedJobs(
   searchQuery,
   location = "Remote",
