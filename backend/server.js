@@ -115,3 +115,5 @@ sequelize
   .catch((err) => {
     console.error("Error syncing the database:", err);
   });
+
+module.exports = app;
