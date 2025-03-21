@@ -1,135 +1,67 @@
 import React, { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { FiMenu, FiX, FiLogOut } from "react-icons/fi";
+import { MdDashboard, MdWork, MdOutlineSmartToy } from "react-icons/md";
+import { AiOutlineFileText } from "react-icons/ai";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const handleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-  const handleClose = () => {};
 
-  const handleLogout = async () => {
-    try {
-      // Make a POST request to the logout route on the server
-      await axios.post("/users/logout");
-
-      // Close the menu after logout
-      handleClose();
-
-      // Optionally, you can clear any stored user data (e.g., tokens, localStorage)
-      localStorage.removeItem("token"); // If you're using JWT or any stored token
-
-      // Optionally, redirect the user to the login or homepage after logout
-      window.location.href = "/login"; // Or use a routing library like react-router
-    } catch (error) {
-      console.error("Error logging out:", error);
-    }
-  };
-  const handleCustomResume = () => {
-    navigate("/customresume");
-  };
-  const handleDashboard = () => {
-    navigate("/dashboard");
-  };
-  const handleJobListings = () => {
-    navigate("/joblistings")
-  }
-  const styles = {
-    appBar: {
-      backgroundColor: "#00796b",
-      padding: "10px 20px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-    },
-    title: {
-      color: "#ffffff",
-      fontSize: "24px",
-      fontWeight: "bold",
-      cursor: "pointer",
-    },
-    menuIcon: {
-      fontSize: "28px",
-      color: "#ffffff",
-      cursor: "pointer",
-      display: "none",
-    },
-    menuItems: {
-      position: "absolute",
-      top: "60px",
-      right: "20px",
-      backgroundColor: "#333",
-      borderRadius: "8px",
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-      zIndex: 100,
-      display: menuOpen ? "block" : "none",
-    },
-    menuItem: {
-      padding: "10px 20px",
-      color: "#ffffff",
-      cursor: "pointer",
-      whiteSpace: "nowrap",
-    },
-    avatar: {
-      width: "40px",
-      height: "40px",
-      borderRadius: "50%",
-      cursor: "pointer",
-    },
-    profileSection: {
-      display: "flex",
-      alignItems: "center",
-    },
-    menuButton: {
-      display: "none",
-    },
-    "@media (max-width: 768px)": {
-      menuIcon: {
-        display: "block",
-      },
-      menuButton: {
-        display: "block",
-      },
-      profileSection: {
-        display: "none",
-      },
-    },
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
   };
 
   return (
-    <div style={styles.appBar}>
-      <div style={styles.title}>CareerForge</div>
-      <div style={styles.profileSection}>
-        <img
-          src={
-            "https://www.murrayglass.com/wp-content/uploads/2020/10/avatar-scaled.jpeg"
-          }
-          alt="Profile"
-          style={styles.avatar}
-          onClick={handleMenu}
-        />
+    <nav className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between shadow-lg">
+      <h1 className="text-2xl font-bold cursor-pointer" onClick={() => navigate("/")}>CareerForge</h1>
+      
+      <div className="hidden md:flex space-x-6">
+        <button className="flex items-center gap-2 hover:text-gray-300" onClick={() => navigate("/dashboard")}>
+          <MdDashboard size={20} /> Dashboard
+        </button>
+        <button className="flex items-center gap-2 hover:text-gray-300" onClick={() => navigate("/customresume")}>
+          <AiOutlineFileText size={20} /> Create Resume
+        </button>
+        <button className="flex items-center gap-2 hover:text-gray-300" onClick={() => navigate("/mockinterviews")}>
+          <MdOutlineSmartToy size={20} /> Mock Interviews
+        </button>
+        <button className="flex items-center gap-2 hover:text-gray-300" onClick={() => navigate("/joblistings")}>
+          <MdWork size={20} /> Job Listings
+        </button>
+        <button className="flex items-center gap-2 hover:text-red-400" onClick={handleLogout}>
+          <FiLogOut size={20} /> Logout
+        </button>
       </div>
-      <div style={styles.menuButton} onClick={handleMenu}>
-        <i style={styles.menuIcon} className="fas fa-bars"></i>
-      </div>
-      <div style={styles.menuItems}>
-        <div style={styles.menuItem} onClick={handleDashboard}>
-          Dashboard
+      
+      {/* Mobile Menu Button */}
+      <button className="md:hidden focus:outline-none" onClick={toggleMenu}>
+        {menuOpen ? <FiX size={28} /> : <FiMenu size={28} />}
+      </button>
+      
+      {/* Mobile Dropdown Menu */}
+      {menuOpen && (
+        <div className="absolute top-16 right-6 w-48 bg-gray-800 rounded-lg shadow-lg flex flex-col space-y-4 p-4 md:hidden">
+          <button className="flex items-center gap-2 hover:text-gray-300" onClick={() => navigate("/dashboard")}>
+            <MdDashboard size={20} /> Dashboard
+          </button>
+          <button className="flex items-center gap-2 hover:text-gray-300" onClick={() => navigate("/customresume")}>
+            <AiOutlineFileText size={20} /> Create Resume
+          </button>
+          <button className="flex items-center gap-2 hover:text-gray-300" onClick={() => navigate("/mockinterviews")}>
+            <MdOutlineSmartToy size={20} /> Mock Interviews
+          </button>
+          <button className="flex items-center gap-2 hover:text-gray-300" onClick={() => navigate("/joblistings")}>
+            <MdWork size={20} /> Job Listings
+          </button>
+          <button className="flex items-center gap-2 text-red-400 hover:text-red-500" onClick={handleLogout}>
+            <FiLogOut size={20} /> Logout
+          </button>
         </div>
-        <div style={styles.menuItem} onClick={handleCustomResume}>
-          Create Custom Resume
-        </div>
-        <div style={styles.menuItem} onClick={handleJobListings}>
-          View Job Listings
-        </div>
-        <div style={styles.menuItem} onClick={handleLogout}>
-          Logout
-        </div>
-      </div>
-    </div>
+      )}
+    </nav>
   );
 };
 

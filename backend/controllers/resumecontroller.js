@@ -1,4 +1,5 @@
 const expressAsyncHandler = require("express-async-handler");
+const OpenAI = require("openai");
 const ResumeBio = require("../models/ResumeBio");
 const Resume = require("../models/Resume");
 const ResumeSummary = require("../models/ResumeSummary");
@@ -558,6 +559,96 @@ Performed*" As they are action verbs which impress employers
   }
 });
 
+const mockinterviews = expressAsyncHandler(async (req, res) => {
+  const { jobTitle, selectedTools, interviewSettings } = req.body;
+
+  console.log(jobTitle, selectedTools, interviewSettings);
+
+  const { style, difficulty } = interviewSettings;
+
+  if (!jobTitle || !selectedTools || !style || !difficulty) {
+    return res.status(400).json({
+      success: false,
+      message: "Job title, selected tools, style, and difficulty are required.",
+    });
+  }
+
+  const questionCount =
+    difficulty === 1 ? 10 : difficulty === 2 ? 15 : difficulty === 3 ? 20 : 10;
+  const difficultyDescription =
+    difficulty === 1
+      ? "easy"
+      : difficulty === 2
+      ? "moderate"
+      : difficulty === 3
+      ? "hard"
+      : "easy";
+
+  try {
+    const prompt = `
+    You are an AI designed to generate mock interview questions for technical roles in the ${style} round.
+    Based on the following input, create ${questionCount} multiple-choice questions
+    tailored for a ${difficultyDescription} level mock interview. Ensure all questions
+    are multiple-choice with one correct answer each.
+
+    Job Title: ${jobTitle}
+    Selected Tools: ${selectedTools.join(", ")}
+    Interview Style: ${style}
+
+    Rules:
+    1. Each question must align with the ${style} round expectations.
+    2. Ensure all questions are relevant to the job title and selected tools.
+    3. Provide four answer choices for each question, with one correct answer.
+    4. Clearly mark the correct answer in the JSON response.
+
+    Round-Specific Expectations:
+    - If this is a Behavioral round, focus on situational and workplace-related scenarios.
+    - If this is a Theoretical round, focus on fundamental concepts and technical principles.
+    - If this is a Coding round, create algorithm or coding-related problems that require logical thinking.
+    - If this is a Managerial round, focus on questions that assess leadership, decision-making, and handling challenges.
+    - If this is a Stress round, make the questions slightly ambiguous or challenging to test composure.
+
+    Return the output in the following JSON format:
+    {
+      "questions": [
+        {
+          "question": "<question text>",
+          "options": ["<option 1>", "<option 2>", "<option 3>", "<option 4>"],
+          "correctAnswer": "<correct answer>"
+        }
+      ]
+    }
+  `;
+
+    const openai = new OpenAI();
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-2024-08-06", // Replace with your preferred model
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    // Get response text
+    let generatedOutput = completion.choices[0].message.content;
+
+    // Clean up response by removing Markdown formatting
+    generatedOutput = generatedOutput.replace(/```json|```/g, "").trim();
+
+    // Parse JSON
+    const structuredOutput = JSON.parse(generatedOutput);
+
+    res.status(200).json({
+      success: true,
+      data: structuredOutput,
+    });
+  } catch (error) {
+    console.error("Error generating interview questions:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while generating mock interview questions.",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = {
   createOrUpdateResumeBio,
   updateResumeSummary,
@@ -569,4 +660,5 @@ module.exports = {
   updateResumeEducation,
   askswiftlet,
   parsenadcreatecustomresume,
+  mockinterviews,
 };

@@ -6,6 +6,8 @@ import Signup from "./pages/signup";
 import Dashboard from "./pages/Dashboard";
 import CreateCustomResume from "./pages/CreateCustomResume";
 import JobListings from "./pages/JobListings";
+import PrepareInterviews from "./pages/PrepareInterviews";
+import MockInterview from "./pages/MockInterview";
 
 const App = () => {
   return (
@@ -17,6 +19,8 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/customresume" element={<CreateCustomResume />} />
         <Route path="/joblistings" element={<JobListings />} />
+        <Route path="/mockinterviews" element={<PrepareInterviews />} />
+        <Route path="/interviews" element={<MockInterview />} />
       </Routes>
     </Router>
   );

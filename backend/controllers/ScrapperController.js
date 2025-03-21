@@ -26,12 +26,12 @@ const getJobListings = expressAsyncHandler(async (req, res) => {
       skills
     );
     const indeedJobs = await scrapeIndeedJobs(jobTitle, location);
-    // const glassdoorJobs = await scrapeGlassdoorJobs(jobTitle, location);
-    // console.log(glassdoorJobs)
-    // // Combine and return the job listings
-    // const allJobs = [...indeedJobs, ...glassdoorJobs];
+    const glassdoorJobs = await scrapeGlassdoorJobs(jobTitle, location);
+    console.log(glassdoorJobs)
+    // Combine and return the job listings
+    const allJobs = [...indeedJobs, ...glassdoorJobs];
     // Respond with the scraped job listings
-    res.status(200).json({ success: true, data: indeedJobs });
+    res.status(200).json({ success: true, data: allJobs });
   } catch (error) {
     console.error("Error scraping job listings:", error);
     res

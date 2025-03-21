@@ -10,6 +10,7 @@ const {
   updateResumeEducation,
   askswiftlet,
   parsenadcreatecustomresume,
+  mockinterviews,
 } = require("../controllers/resumecontroller");
 const { isAuthenticated } = require("../controllers/usercontroller");
 const router = express.Router();
@@ -24,6 +25,7 @@ router
   .delete(deleteresumeexperience, isAuthenticated);
 router.route("/resumes/:resumeId").get(getDraftUserSingleResume);
 router.route("/resume-education").put(isAuthenticated, updateResumeEducation);
-router.route("/chats").post(askswiftlet)
-router.route("/parseresume").post(parsenadcreatecustomresume)
+router.route("/chats").post(askswiftlet);
+router.route("/parseresume").post(parsenadcreatecustomresume);
+router.route("/mockinterviews").post(mockinterviews);
 module.exports = router;

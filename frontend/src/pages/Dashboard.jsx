@@ -857,18 +857,11 @@ const Dashboard = () => {
           onEdit={handleEditResume}
         />
       )}
+
       {isCreatingResume && (
-        <Grid
-          container
-          spacing={2}
-          style={{ marginLeft: "0px", marginRight: "0px" }}
-        >
-          <Grid
-            item
-            xs={12}
-            md={7}
-            style={{ paddingRight: "10px", paddingLeft: "0px" }}
-          >
+        <div className="flex flex-col md:flex-row gap-8 px-8 py-6">
+          {/* Left Side: Step-by-Step Form */}
+          <div className="w-full md:w-2/3 p-6 bg-white shadow-2xl rounded-lg border border-gray-200">
             {currentStep === 0 && (
               <UserBioStep
                 isEditing={isEditing}
@@ -891,7 +884,7 @@ const Dashboard = () => {
                 onSkillAdd={handleSkillAdd}
                 onNext={handleNextStep}
                 onBack={handlePrevStep}
-                modifyOrDeleteSkill={updateSkills} // Pass the function to the child
+                modifyOrDeleteSkill={updateSkills}
               />
             )}
             {currentStep === 3 && (
@@ -913,79 +906,43 @@ const Dashboard = () => {
                 onBack={handlePrevStep}
               />
             )}
-            {/* Additional steps for education, hobbies, etc. */}
-          </Grid>
+          </div>
 
-          {/* Resume Preview Section */}
-          <Grid item xs={12} md={5}>
-            <Card
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: "10px",
-                padding: "10px",
-                marginTop: "10px",
-                boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-                marginRight: "3rem",
-              }}
-            >
-              <CardContent>
-                <Typography
-                  variant="h6"
-                  style={{
-                    fontWeight: "bold",
-                    color: "#00796b",
-                    marginBottom: "10px",
-                  }}
+          {/* Right Side: Resume Preview */}
+          <div className="w-full md:w-1/3 p-6 bg-gradient-to-r from-gray-900 to-gray-800 text-white shadow-2xl rounded-xl border border-gray-700">
+            <h3 className="text-2xl font-bold text-teal-400 mb-4 text-center">
+              Resume Preview
+            </h3>
+            <div className="bg-gray-100 text-gray-900 p-5 rounded-lg min-h-[450px] overflow-y-auto shadow-inner border border-gray-300">
+              <Paper content={paperContent} resumeData={resumeData} />
+            </div>
+            <div className="mt-5 flex flex-wrap gap-4 justify-center">
+              <button
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-lg shadow-lg hover:scale-105 transition transform"
+                onClick={generatePDF}
+              >
+                📄 Download PDF
+              </button>
+              <button
+                className="px-6 py-3 border border-gray-400 text-white rounded-lg hover:bg-gray-700 transition"
+                onClick={handlePrevStep}
+              >
+                ⬅️ Back
+              </button>
+              {isCompleted && (
+                <button
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold rounded-lg shadow-lg hover:scale-105 transition transform"
+                  onClick={handleCompleted}
                 >
-                  Resume Preview
-                </Typography>
-                <Paper
-                  content={paperContent}
-                  resumeData={resumeData}
-                  style={{
-                    padding: "8px",
-                    minHeight: "450px", // Reduced height
-                    boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-                    borderRadius: "10px",
-                    marginBottom: "8px", // Reduced bottom margin
-                    overflowY: "auto", // Added scroll in case of overflow
-                  }}
-                />
-                <Box mt={2}>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={generatePDF}
-                  >
-                    Download PDF
-                  </Button>
-                  &nbsp;
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={handlePrevStep}
-                  >
-                    Back
-                  </Button>
-                  &nbsp;
-                  {isCompleted ? (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleCompleted}
-                    >
-                      Mark as Completed
-                    </Button>
-                  ) : (
-                    ""
-                  )}
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+                  ✅ Mark as Completed
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
-      <Footer/>
+
+      <Footer />
     </div>
   );
 };

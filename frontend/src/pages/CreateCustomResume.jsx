@@ -45,7 +45,7 @@ const CreateCustomResume = () => {
       const response = await axios.post("/resume/parseresume", formData);
 
       let modifiedResume = response.data.data;
-
+      console.log(modifiedResume);
       // Check if the response starts with backticks and remove them
       if (typeof modifiedResume === "string") {
         console.log("Received string with backticks, removing them...");
@@ -84,7 +84,11 @@ const CreateCustomResume = () => {
     const { width, height } = page.getSize();
     const maxWidth = width - margin * 2;
 
-    const sanitizeText = (text) => text.replace(/\n/g, " ");
+    const sanitizeText = (text) => {
+      return text
+        .replace(/\n/g, " ") // Replace newlines with spaces
+        .replace(/[^\x00-\x7F]/g, ""); // Remove all non-ASCII characters (including emojis)
+    };
 
     const wrapText = (text, maxWidth, font, fontSize) => {
       const sanitizedText = sanitizeText(text);
@@ -366,235 +370,128 @@ const CreateCustomResume = () => {
   return (
     <>
       <Navbar />
-      <RootContainer>
-        <Grid container spacing={3}>
-          {/* Job Description Section */}
-          <Grid item xs={12} md={5} lg={4}>
-            <Paper sx={{ padding: "1rem", height: "100%" }} elevation={3}>
-              <Typography variant="h6" gutterBottom>
-                Paste Job Description Here
-              </Typography>
-              <TextField
-                label="Job Description"
-                multiline
-                rows={10}
-                variant="outlined"
-                fullWidth
+      <div className="min-h-screen flex flex-col items-center bg-gray-50 p-4 md:p-8">
+        <div className="max-w-6xl w-full grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Left Panel - Job & Resume */}
+          <div className="col-span-2 flex flex-col gap-6">
+            {/* Job Description Section */}
+            <div className="bg-white p-6 rounded-lg shadow-xl">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                Paste Job Description
+              </h2>
+              <textarea
+                className="w-full border border-gray-300 rounded-lg p-4 h-40 focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-800 resize-none"
+                placeholder="Enter job description..."
                 value={jobDescription}
                 onChange={(e) => setJobDescription(e.target.value)}
               />
-            </Paper>
-          </Grid>
+            </div>
 
-          {/* Resume Upload Section */}
-          <Grid item xs={12} md={5} lg={4}>
-            <Paper sx={{ padding: "1rem", height: "100%" }} elevation={3}>
-              <Typography variant="h6" gutterBottom>
-                Copy & Paste Your Resume or Upload
-              </Typography>
-              <TextField
-                label="Paste Your Resume"
-                multiline
-                rows={10}
-                variant="outlined"
-                fullWidth
+            {/* Resume Upload Section */}
+            <div className="bg-white p-6 rounded-lg shadow-xl">
+              <h2 className="text-xl font-bold text-gray-900 mb-3">
+                Upload or Paste Your Resume
+              </h2>
+              <textarea
+                className="w-full border border-gray-300 rounded-lg p-4 h-40 focus:ring-2 focus:ring-blue-500 focus:outline-none text-gray-800 resize-none"
+                placeholder="Paste your resume..."
                 value={typeof resume === "string" ? resume : resume.name || ""}
                 onChange={(e) => setResume(e.target.value)}
               />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  width: "100%",
-                }}
-              >
-                <Button
-                  variant="contained"
-                  component="label"
-                  sx={{
-                    marginTop: "1rem",
-                    padding: "0.5rem 1rem",
-                    fontSize: "0.875rem",
-                    minWidth: "120px",
-                  }}
-                >
-                  Upload Resume
-                  <input type="file" hidden onChange={handleFileUpload} />
-                </Button>
-                &nbsp;
-                <Button
-                  variant="contained"
-                  component="label"
-                  sx={{
-                    marginTop: "1rem",
-                    padding: "0.5rem 1rem",
-                    fontSize: "0.875rem",
-                    minWidth: "120px",
-                  }}
+              <div className="flex flex-col md:flex-row gap-4 mt-6 items-center justify-center">
+                {/* Upload Button */}
+                <label className="relative flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 via-purple-600 to-indigo-600 text-white font-semibold text-lg rounded-lg shadow-md cursor-pointer transition-all duration-300 transform hover:scale-102 hover:shadow-lg">
+                  📂 Upload Resume
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                  />
+                </label>
+
+                {/* Generate Resume Button */}
+                <button
+                  className="relative flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-500 text-white font-semibold text-lg rounded-lg shadow-md transition-all duration-300 transform hover:scale-102 hover:shadow-lg"
                   onClick={handleResumeModification}
                 >
-                  Create a Custom Resume
-                  {/* <input type="file" hidden onChange={handleFileUpload} /> */}
-                </Button>
+                  ⚡ Generate Resume
+                </button>
               </div>
-            </Paper>
-          </Grid>
+            </div>
+          </div>
 
-          {/* Chat Section */}
-          <Grid item xs={12} md={2} lg={4}>
-            <ChatBox elevation={3}>
-              <Typography variant="h6" gutterBottom>
-                <FlutterDashIcon />
-                Ask Swiftlet!
-              </Typography>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  flex: 1,
-                  overflowY: "auto",
-                  marginBottom: "1rem",
-                }}
-              >
-                {chatHistory.map((chat, index) => (
-                  <div key={index} style={{ marginBottom: "1rem" }}>
-                    {/* User prompt styling */}
-                    <p
-                      style={{
-                        padding: "1rem",
-                        color: "#ffffff", // White text for contrast
-                        marginBottom: "0.5rem",
-                        fontSize: "1rem",
-                        borderRadius: "15px 15px 0 15px",
-                        backgroundColor: "#004d40", // Softer dark teal background
-                        textAlign: "right",
-                        justifyContent: "flex-end",
-                        boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)", // Softer shadow for depth
-                        maxWidth: "75%",
-                        marginLeft: "auto",
-                      }}
-                    >
-                      {chat.prompt}
+          {/* Right Panel - Chat Section */}
+          <div className="bg-white p-6 rounded-lg shadow-xl flex flex-col">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center mb-4">
+              🦜 Ask Swiftlet!
+            </h2>
+
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-y-auto space-y-3 mb-4 max-h-[300px]">
+              {chatHistory.map((chat, index) => (
+                <div key={index} className="space-y-2">
+                  <p className="bg-teal-700 text-white p-3 rounded-xl max-w-xs ml-auto shadow-md">
+                    {chat.prompt}
+                  </p>
+                  <div className="flex items-start space-x-2">
+                    🦜
+                    <p className="bg-teal-500 text-white p-3 rounded-xl max-w-xs shadow-md">
+                      {formatResponse(chat.response)}
                     </p>
-
-                    {/* Response styling */}
-                    <div style={{ display: "flex", alignItems: "flex-start" }}>
-                      <FlutterDashIcon
-                      // style={{ color: "#00796b", marginRight: "0.5rem" }}
-                      />
-                      <div
-                        style={{
-                          padding: "1rem",
-                          color: "#ffffff", // White text for better readability
-                          marginBottom: "0.5rem",
-                          borderRadius: "15px 15px 0 15px",
-                          backgroundColor: "#00796b", // Matching navbar color with slightly lighter tone
-                          textAlign: "left",
-                          justifyContent: "flex-start",
-                          boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)", // Subtle shadow for depth
-                          maxWidth: "75%",
-                        }}
-                      >
-                        {formatResponse(chat.response)}
-                      </div>
-                    </div>
                   </div>
-                ))}
+                </div>
+              ))}
+              {loading && <p className="text-gray-500">Loading...</p>}
+            </div>
 
-                {loading && (
-                  <div className="loading-dots">
-                    <span>.</span>
-                    <span>.</span>
-                    <span>.</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Buttons for predefined queries */}
-              <Box sx={{ textAlign: "right" }}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{
-                    marginBottom: "0.5rem",
-                    borderRadius: "15px 15px 0 15px",
-                    backgroundColor: "#004d40", // Softer dark teal background
-                    textAlign: "right",
-                    justifyContent: "flex-end",
-                    boxShadow: "none",
-                    maxWidth: "75%",
-                    marginLeft: "auto",
-                  }}
-                  onClick={() => handleChatSubmit("Create a cover letter")}
-                >
-                  Create Cover Letter
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{
-                    marginBottom: "0.5rem",
-                    borderRadius: "15px 15px 0 15px",
-                    backgroundColor: "#004d40", // Softer dark teal background
-                    textAlign: "right",
-                    justifyContent: "flex-end",
-                    boxShadow: "none",
-                    maxWidth: "75%",
-                    marginLeft: "auto",
-                  }}
-                  onClick={() => handleChatSubmit("Why am I a good fit?")}
-                >
-                  Why Am I A Good Fit?
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  fullWidth
-                  sx={{
-                    borderRadius: "15px 15px 0 15px",
-                    backgroundColor: "#004d40", // Softer dark teal background
-                    textAlign: "right",
-                    justifyContent: "flex-end",
-                    boxShadow: "none",
-                    maxWidth: "75%",
-                    marginLeft: "auto",
-                  }}
-                  onClick={() => handleChatSubmit("Suggest similar roles")}
-                >
-                  Similar Roles
-                </Button>
-              </Box>
-
-              {/* Text input for user typing */}
-              <Box
-                component="form"
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginTop: "1rem",
-                }}
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleChatSubmit(userInput);
-                }}
+            {/* Predefined Queries */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                className="w-full bg-teal-700 text-white p-3 rounded-lg hover:bg-teal-800 transition shadow-md"
+                onClick={() => handleChatSubmit("Create a cover letter")}
               >
-                <TextField
-                  fullWidth
-                  placeholder="Type your message..."
-                  sx={{ marginRight: "0.5rem" }}
-                  value={userInput}
-                  onChange={(e) => setuserinput(e.target.value)}
-                />
-                <Button type="submit" variant="contained">
-                  Send
-                </Button>
-              </Box>
-            </ChatBox>
-          </Grid>
-        </Grid>
-      </RootContainer>
+                ✍️ Create Cover Letter
+              </button>
+              <button
+                className="w-full bg-teal-700 text-white p-3 rounded-lg hover:bg-teal-800 transition shadow-md"
+                onClick={() => handleChatSubmit("Why am I a good fit?")}
+              >
+                🔍 Why Am I A Good Fit?
+              </button>
+              <button
+                className="w-full bg-teal-700 text-white p-3 rounded-lg hover:bg-teal-800 transition shadow-md"
+                onClick={() => handleChatSubmit("Suggest similar roles")}
+              >
+                📌 Similar Roles
+              </button>
+            </div>
+
+            {/* User Input */}
+            <form
+              className="mt-4 flex"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleChatSubmit(userInput);
+              }}
+            >
+              <input
+                type="text"
+                className="flex-1 border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none shadow-md"
+                placeholder="Type your message..."
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="ml-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition shadow-md"
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
       <Footer />
     </>
   );

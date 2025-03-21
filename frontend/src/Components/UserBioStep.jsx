@@ -102,144 +102,130 @@ const UserBioStep = ({ bio, onBioChange, onNext, onBack, isEditing }) => {
   };
 
   return (
-    <Box sx={{ padding: "2rem" }}>
-      <h2 style={{ marginBottom: "2rem" }}>User Bio</h2>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="First Name"
-            name="firstName"
-            value={bio.firstName || ""} // Use camelCase and default to empty string if no data
-            onChange={onBioChange}
-            variant="outlined"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Last Name"
-            name="lastName"
-            value={bio.lastName || ""} // Use camelCase and default to empty string if no data
-            onChange={onBioChange}
-            variant="outlined"
-          />
-        </Grid>
+    <div className="max-w-4xl mx-auto bg-white shadow-xl rounded-lg p-8">
+    <h2 className="text-3xl font-bold mb-6 text-gray-800">User Bio</h2>
 
-        <Grid item xs={12} sm={6}>
-          <Grid container spacing={2}>
-            <Grid item xs={4}>
-              <TextField
-                select
-                fullWidth
-                label="Country Code"
-                name="countryCode"
-                value={bio.countryCode || ""} // Default to empty string if no data
-                onChange={onBioChange}
-                variant="outlined"
-              >
-                {countries.map((option) => (
-                  <MenuItem key={option.code} value={option.code}>
-                    {option.label} ({option.code})
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={8}>
-              <TextField
-                fullWidth
-                label="Phone Number"
-                name="phoneNumber"
-                value={bio.phoneNumber || ""} // Use camelCase
-                onChange={onBioChange}
-                variant="outlined"
-              />
-            </Grid>
-          </Grid>
-        </Grid>
+    {/* Grid Layout */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <input
+        type="text"
+        name="firstName"
+        placeholder="First Name"
+        value={bio.firstName || ""}
+        onChange={onBioChange}
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
 
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Email"
-            name="email"
-            value={bio.email || ""} // Use camelCase
-            onChange={onBioChange}
-            variant="outlined"
-          />
-        </Grid>
+      <input
+        type="text"
+        name="lastName"
+        placeholder="Last Name"
+        value={bio.lastName || ""}
+        onChange={onBioChange}
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
 
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="LinkedIn Profile"
-            name="linkedinProfile"
-            value={bio.linkedinProfile || ""} // Use camelCase
-            onChange={onBioChange}
-            variant="outlined"
-          />
-        </Grid>
+      {/* Country Code & Phone Number */}
+      <div className="flex gap-4">
+        <select
+          name="countryCode"
+          value={bio.countryCode || ""}
+          onChange={onBioChange}
+          className="w-1/3 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        >
+          {countries.map((option) => (
+            <option key={option.code} value={option.code}>
+              {option.label} ({option.code})
+            </option>
+          ))}
+        </select>
 
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="GitHub Link"
-            name="githubLink"
-            value={bio.githubLink || ""} // Use camelCase
-            onChange={onBioChange}
-            variant="outlined"
-          />
-        </Grid>
+        <input
+          type="text"
+          name="phoneNumber"
+          placeholder="Phone Number"
+          value={bio.phoneNumber || ""}
+          onChange={onBioChange}
+          className="w-2/3 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+        />
+      </div>
 
-        <Grid item xs={12} sm={4}>
-          <TextField
-            fullWidth
-            label="Website Link"
-            name="websiteLink"
-            value={bio.websiteLink || ""} // Use camelCase
-            onChange={onBioChange}
-            variant="outlined"
-          />
-        </Grid>
+      {/* Email */}
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        value={bio.email || ""}
+        onChange={onBioChange}
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
 
-        {/* Location Field using Google Places Autocomplete */}
-        <Grid item xs={12}>
-          {isLoaded && (
-            <StandaloneSearchBox
-              onLoad={(ref) => (inputref.current = ref)}
-              onPlacesChanged={handleOnPlacesChanged}
-            >
-              <TextField
-                fullWidth
-                label="Location"
-                variant="outlined"
-                placeholder="Start typing your address"
-                value={locationInput} // Bind input value to state
-                onChange={handleLocationInputChange} // Allow manual input changes
-                inputProps={{
-                  style: {
-                    padding: "12px",
-                  },
-                }}
-              />
-            </StandaloneSearchBox>
-          )}
-        </Grid>
-      </Grid>
+      {/* Social Links */}
+      <input
+        type="text"
+        name="linkedinProfile"
+        placeholder="LinkedIn Profile"
+        value={bio.linkedinProfile || ""}
+        onChange={onBioChange}
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
 
-      <Grid container spacing={2} sx={{ marginTop: "20px" }}>
-        <Grid item>
-          <Button variant="contained" onClick={onBack}>
-            Back
-          </Button>
-        </Grid>
-        <Grid item>
-          <Button variant="contained" color="primary" onClick={handleSubmit}>
-            Next
-          </Button>
-        </Grid>
-      </Grid>
-    </Box>
+      <input
+        type="text"
+        name="githubLink"
+        placeholder="GitHub Link"
+        value={bio.githubLink || ""}
+        onChange={onBioChange}
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
+
+      <input
+        type="text"
+        name="websiteLink"
+        placeholder="Website Link"
+        value={bio.websiteLink || ""}
+        onChange={onBioChange}
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+      />
+    </div>
+
+    {/* Google Places Autocomplete for Location (Kept Intact) */}
+    <div className="mt-6">
+      {isLoaded && (
+        <div className="w-full">
+          <StandaloneSearchBox
+            onLoad={(ref) => (inputref.current = ref)}
+            onPlacesChanged={handleOnPlacesChanged}
+          >
+            <input
+              type="text"
+              placeholder="Location (Start typing your address)"
+              value={locationInput}
+              onChange={handleLocationInputChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </StandaloneSearchBox>
+        </div>
+      )}
+    </div>
+
+    {/* Buttons */}
+    <div className="mt-8 flex justify-between">
+      <button
+        onClick={onBack}
+        className="px-6 py-3 text-gray-700 font-semibold bg-gray-200 hover:bg-gray-300 rounded-lg transition"
+      >
+        Back
+      </button>
+
+      <button
+        onClick={handleSubmit}
+        className="px-6 py-3 text-white font-semibold bg-blue-600 hover:bg-blue-700 rounded-lg transition"
+      >
+        Next
+      </button>
+    </div>
+  </div>
   );
 };
 

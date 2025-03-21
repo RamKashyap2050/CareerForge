@@ -1,19 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import {
-  Box,
-  Button,
-  Typography,
-  Card,
-  CardContent,
-  CardActions,
-  Grid,
-  Tooltip,
-} from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import DownloadIcon from "@mui/icons-material/Download";
-import PrintIcon from "@mui/icons-material/Print";
+import { FaDownload, FaPrint, FaEdit, FaTrash } from "react-icons/fa";
+
 
 const ResumeList = ({ onNewResume, onPrint, onDownload, onEdit }) => {
   const [resumes, setResumes] = useState([]);
@@ -24,6 +12,7 @@ const ResumeList = ({ onNewResume, onPrint, onDownload, onEdit }) => {
         withCredentials: true,
       })
       .then((response) => {
+        console.log(response.data)
         setResumes(response.data);
       })
       .catch((error) => {
@@ -37,121 +26,82 @@ const ResumeList = ({ onNewResume, onPrint, onDownload, onEdit }) => {
   };
 
   return (
-    <div style={{ marginTop: "2rem" }}>
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "1rem",
-          borderRadius: "8px",
-          marginBottom: "1rem",
-        }}
+    <div className="mt-8 max-w-6xl mx-auto">
+    {/* Header Section */}
+    <div className="flex justify-between items-center bg-gray-800 text-white p-4 rounded-md shadow-lg mb-4">
+      <h2 className="text-xl font-bold">My Resumes</h2>
+      <button
+        className={`px-4 py-2 rounded-md font-semibold tracking-wide uppercase transition-all duration-300 ${
+          hover ? "bg-gray-600" : "bg-gray-700"
+        }`}
+        onClick={onNewResume}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
       >
-        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-          My Resumes
-        </Typography>
-
-        <Button
-          variant="contained"
-          size="medium"
-          sx={{
-            backgroundColor: hover ? "#424242" : "#333333",
-            transition: "all 0.3s ease",
-            textTransform: "uppercase",
-            fontWeight: "bold",
-            letterSpacing: "1px",
-          }}
-          onClick={onNewResume}
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-        >
-          Create New Resume
-        </Button>
-      </Box>
-
-      {resumes.length > 0 ? (
-        <Grid container spacing={2}>
-          {resumes.map((resume) => (
-            <Grid item xs={12} md={6} lg={4} key={resume.id}>
-              <Card sx={{ minHeight: "150px" }}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    {resume.resumeBio.FirstName} {resume.resumeBio.LastName}
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    color="textSecondary"
-                    gutterBottom
-                  >
-                    {resume.resumeBio.Email}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Phone:</strong> {resume.resumeBio.PhoneNumber}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontStyle: "italic",
-                      color: resume.Status === "draft" ? "orange" : "green",
-                    }}
-                  >
-                    {resume.Status === "draft" ? "Draft" : "Completed"}
-                  </Typography>
-                </CardActions>
-                <CardActions>
-                  {resume.Status === "Completed" && (
-                    <>
-                      <Button
-                        startIcon={<DownloadIcon />}
-                        onClick={() => onDownload(resume.id)}
-                        color="primary"
-                      >
-                        Download
-                      </Button>
-                      <Button
-                        startIcon={<PrintIcon />}
-                        onClick={() => onPrint(resume.id)}
-                        color="primary"
-                      >
-                        Print
-                      </Button>
-                    </>
-                  )}
-                  <Tooltip title="Edit Resume" arrow>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      startIcon={<EditIcon />}
-                      onClick={() => onEdit(resume.id)}
-                    >
-                      Edit
-                    </Button>
-                  </Tooltip>
-
-                  <Tooltip title="Delete Resume" arrow>
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => onDelete(resume.id)}
-                    >
-                      Delete
-                    </Button>
-                  </Tooltip>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      ) : (
-        <Typography variant="body1" sx={{ textAlign: "center" }}>
-          No resumes available. Please create a new resume.
-        </Typography>
-      )}
+        Create New Resume
+      </button>
     </div>
+
+    {/* Resume Cards */}
+    {resumes.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {resumes.map((resume) => (
+          <div key={resume.id} className="bg-white shadow-md rounded-lg p-4 relative hover:shadow-xl transition-all duration-300">
+            <h3 className="text-lg font-semibold mb-2">
+              {resume.resumeBio.FirstName} {resume.resumeBio.LastName}
+            </h3>
+            <p className="text-gray-600 text-sm">{resume.resumeBio.Email}</p>
+            <p className="text-gray-700 text-sm mt-1">
+              <strong>Phone:</strong> {resume.resumeBio.PhoneNumber}
+            </p>
+
+            {/* Resume Status */}
+            <p className={`text-sm font-medium mt-2 italic ${
+              resume.Status === "draft" ? "text-orange-500" : "text-green-600"
+            }`}>
+              {resume.Status === "draft" ? "Draft" : "Completed"}
+            </p>
+
+            {/* Actions */}
+            <div className="mt-4 flex flex-wrap gap-2">
+              {resume.Status === "Completed" && (
+                <>
+                  <button
+                    className="flex items-center bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-all"
+                    onClick={() => onDownload(resume.id)}
+                  >
+                    <FaDownload className="mr-2" /> Download
+                  </button>
+                  <button
+                    className="flex items-center bg-gray-600 text-white px-3 py-1 rounded-md hover:bg-gray-700 transition-all"
+                    onClick={() => onPrint(resume.id)}
+                  >
+                    <FaPrint className="mr-2" /> Print
+                  </button>
+                </>
+              )}
+
+              <button
+                className="flex items-center bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600 transition-all"
+                onClick={() => onEdit(resume.id)}
+              >
+                <FaEdit className="mr-2" /> Edit
+              </button>
+
+              <button
+                className="flex items-center bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-all"
+                onClick={() => onDelete(resume.id)}
+              >
+                <FaTrash className="mr-2" /> Delete
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <p className="text-center text-gray-600 mt-4">No resumes available. Please create a new resume.</p>
+    )}
+  </div>
   );
 };
 
