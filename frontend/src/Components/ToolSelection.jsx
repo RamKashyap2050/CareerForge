@@ -58,7 +58,6 @@ const ToolSelection = () => {
 
   const fetchAiSuggestions = async () => {
     const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
-    console.log(OPENAI_API_KEY);
     setLoading(true);
     try {
       const response = await fetch(
