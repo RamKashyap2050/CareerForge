@@ -25,6 +25,7 @@ const JobTitleSelection = () => {
   const fetchMoreJobTitles = async () => {
     setLoadingMore(true);
     const VITE_OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
+    console.log(import.meta.env)
     console.log(VITE_OPENAI_API_KEY)
     try {
       const response = await fetch(
