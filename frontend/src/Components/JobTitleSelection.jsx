@@ -24,7 +24,8 @@ const JobTitleSelection = () => {
 
   const fetchMoreJobTitles = async () => {
     setLoadingMore(true);
-
+    const VITE_OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
+    console.log(VITE_OPENAI_API_KEY)
     try {
       const response = await fetch(
         "https://api.openai.com/v1/chat/completions",
@@ -32,7 +33,7 @@ const JobTitleSelection = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+            Authorization: `Bearer ${VITE_OPENAI_API_KEY }`,
           },
           body: JSON.stringify({
             model: "gpt-4",
