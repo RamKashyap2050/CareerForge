@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaPlus, FaCheck, FaRobot } from "react-icons/fa";
+import useMockInterviewStore from "../store/mockinterviews"; // Import Zustand store
 
 const toolsList = [
   "React",
@@ -34,12 +35,13 @@ const toolsList = [
 ];
 
 const ToolSelection = () => {
-  const [selectedTools, setSelectedTools] = useState([]);
+  const { selectedTools, setSelectedTools } = useMockInterviewStore(); // Use Zustand store
   const [tools, setTools] = useState(toolsList);
   const [newTool, setNewTool] = useState("");
   const [aiResponse, setAiResponse] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // ✅ Sync selectedTools using Zustand (Fix)
   const handleSelectTool = (tool) => {
     setSelectedTools((prevSelected) =>
       prevSelected.includes(tool)
@@ -48,42 +50,31 @@ const ToolSelection = () => {
     );
   };
 
+  // ✅ Sync new tool addition with Zustand store (Fix)
   const handleAddTool = () => {
     if (newTool.trim() && !tools.includes(newTool)) {
       setTools([...tools, newTool]);
-      setSelectedTools([...selectedTools, newTool]);
+      setSelectedTools((prevSelected) => [...prevSelected, newTool]);
       setNewTool("");
     }
   };
 
+  // Fetch AI insights
   const fetchAiSuggestions = async () => {
-    const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${OPENAI_API_KEY}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-2024-08-06",
-            messages: [
-              {
-                role: "user",
-                content: `Give me insights on ${selectedTools.join(", ")}`,
-              },
-            ],
-          }),
-        }
-      );
+      const response = await fetch(`/api/mock/getinsights`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ selectedTools }),
+      });
+
       const data = await response.json();
-      console.log(data);
-      setAiResponse(
-        data.choices?.[0]?.message?.content || "No response received."
-      );
+      if (data.error) throw new Error(data.error);
+
+      setAiResponse(data.insights);
     } catch (error) {
       console.error("AI Fetch Error:", error);
       setAiResponse("Error fetching AI insights.");
@@ -94,34 +85,18 @@ const ToolSelection = () => {
 
   const parseAiResponse = (response) => {
     if (!response) return "";
-
-    // Ensure proper paragraph spacing
     response = response
-      .split(/\n\s*\n/) // Split at double newlines (paragraphs)
+      .split(/\n\s*\n/)
       .map((para) => `<p>${para.trim()}</p>`)
       .join("");
-
-    // Convert bold text (**text**) → <strong>text</strong>
     response = response.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-
-    // Convert italic text (*text*) → <em>text</em>
     response = response.replace(/\*(.*?)\*/g, "<em>$1</em>");
-
-    // Convert Headings (### Heading) → <h3>Heading</h3>
     response = response.replace(/###\s?(.*?)(\n|$)/g, "<h3>$1</h3>");
-
-    // Convert Subheadings (## Heading) → <h2>Heading</h2>
     response = response.replace(/##\s?(.*?)(\n|$)/g, "<h2>$1</h2>");
-
-    // Convert Bullet Points (- item) → <ul><li>item</li></ul>
     response = response.replace(/(?:<p>)?- (.*?)<\/p>/g, "<li>$1</li>");
     response = response.replace(/(<li>.*<\/li>)+/g, "<ul>$&</ul>");
-
-    // Convert Numbered Lists (1. item) → <ol><li>item</li></ol>
     response = response.replace(/(?:<p>)?\d+\.\s(.*?)<\/p>/g, "<li>$1</li>");
     response = response.replace(/(<li>.*<\/li>)+/g, "<ol>$&</ol>");
-
-    // Convert remaining single newlines into <br> within paragraphs
     response = response.replace(/(?<!<\/h\d>|\n)<br\s*\/?>/g, "<br>");
 
     return response;
@@ -134,6 +109,7 @@ const ToolSelection = () => {
         <h2 className="text-2xl font-bold text-gray-800 mb-4">
           🔧 Select Technologies & Tools
         </h2>
+
         {/* Tool Selection Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
           {tools.map((tool) => (
@@ -155,6 +131,7 @@ const ToolSelection = () => {
             </button>
           ))}
         </div>
+
         {/* Add New Tool */}
         <div className="flex items-center space-x-3 mb-6">
           <input
@@ -171,6 +148,7 @@ const ToolSelection = () => {
             <FaPlus />
           </button>
         </div>
+
         {/* AI Suggestions Button */}
         <button
           className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg shadow-md flex items-center justify-center space-x-2 hover:bg-blue-700 transition-all"
@@ -182,6 +160,7 @@ const ToolSelection = () => {
             {loading ? "Fetching AI Insights..." : "Get AI Insights on Tools"}
           </span>
         </button>
+
         {/* AI Response */}
         {aiResponse && (
           <div className="bg-gray-50 mt-6 p-4 rounded-lg shadow-md border border-gray-200">

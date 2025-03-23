@@ -6,6 +6,7 @@ const sequelize = require("./config/db");
 require("dotenv").config();
 const resumeRoutes = require("../backend/routes/resumeRoutes");
 const userRoutes = require("../backend/routes/userRoutes");
+const mockinterviewsRoutes = require("../backend/routes/mockInterview");
 const app = express();
 const cors = require("cors");
 const session = require("express-session");
@@ -66,7 +67,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: true,
+      secure: false,
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
@@ -91,7 +92,7 @@ app.use(passport.session());
 app.use("/users", userRoutes);
 app.use("/resume", resumeRoutes);
 app.use("/scrapping", ScrapperRoutes);
-
+app.use("/api/mock", mockinterviewsRoutes);
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

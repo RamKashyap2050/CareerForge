@@ -18,6 +18,10 @@ export default defineConfig({
         target: "http://localhost:5001",
         changeOrigin: true,
       },
+      "/api/mock": {
+        target: "http://localhost:5001",
+        changeOrigin: true,
+      },
     },
   },
   base: "./", // Change the base configuration to an object

@@ -10,20 +10,27 @@ const useMockInterviewStore = create((set, get) => ({
     difficulty: 1,
   },
   questions: [], // Store for generated questions
+
   setJobTitle: (title) => set({ jobTitle: title }),
+
   setSelectedTools: (updateFn) =>
     set((state) => {
       const newTools =
         typeof updateFn === "function"
           ? updateFn(state.selectedTools)
           : updateFn;
-      console.log("Updated tools:", newTools);
       return { selectedTools: newTools };
     }),
-  setInterviewSettings: (settings) => set({ interviewSettings: settings }),
+
+  setInterviewSettings: (updateFn) =>
+    set((state) => ({
+      interviewSettings:
+        typeof updateFn === "function" ? updateFn(state.interviewSettings) : updateFn,
+    })),
+
   submitInterviewData: (navigate) => {
     const { jobTitle, selectedTools, interviewSettings } = get();
-
+    console.log(jobTitle, selectedTools, interviewSettings)
     if (!jobTitle || !selectedTools.length || !interviewSettings.style) {
       alert("Please complete all fields before submitting!");
       return;
@@ -41,9 +48,8 @@ const useMockInterviewStore = create((set, get) => ({
       .post(`/resume/mockinterviews`, payload)
       .then((response) => {
         console.log("Response:", response.data);
-        console.log(response.data.questions)
-        set({ questions: response.data.data.questions }); // Store the generated questions
-        navigate("/interviews"); // Redirect after storing questions
+        set({ questions: response.data.data.questions });
+        navigate("/interviews");
       })
       .catch((error) => {
         console.error("Error creating mock interview:", error);
@@ -51,6 +57,5 @@ const useMockInterviewStore = create((set, get) => ({
       });
   },
 }));
-
 
 export default useMockInterviewStore;

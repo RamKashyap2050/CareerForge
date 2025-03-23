@@ -24,52 +24,28 @@ const JobTitleSelection = () => {
 
   const fetchMoreJobTitles = async () => {
     setLoadingMore(true);
-    const VITE_OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY
-    console.log(import.meta.env)
-    console.log(VITE_OPENAI_API_KEY)
     try {
-      const response = await fetch(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${VITE_OPENAI_API_KEY }`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4",
-            messages: [
-              {
-                role: "system",
-                content:
-                  "Suggest 5 job titles related strictly to IT & Computing. Format them as a plain list without numbers or bullets.",
-              },
-            ],
-          }),
-        }
-      );
-
+      const response = await fetch(`/api/mock/loadMoreTitles`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
       const data = await response.json();
-
-      if (!data.choices || data.choices.length === 0) {
-        throw new Error("No valid job titles received from AI.");
+  
+      if (!data.jobTitles || data.jobTitles.length === 0) {
+        throw new Error("No valid job titles received from backend.");
       }
-
-      const suggestions = data.choices[0]?.message?.content
-        .split("\n") // Split by new line
-        .map((s) => s.trim()) // Remove extra spaces
-        .filter((s) => s.length > 3 && !/^\d/.test(s)); // Remove numbers like "1. Title"
-
+  
       setJobTitles((prevTitles) => {
         const updatedTitles = [
           ...new Set([
             ...prevTitles.filter((t) => t !== "More..."),
-            ...suggestions,
+            ...data.jobTitles,
           ]),
         ];
-        return updatedTitles.includes("More...")
-          ? updatedTitles
-          : [...updatedTitles, "More..."];
+        return updatedTitles.includes("More...") ? updatedTitles : [...updatedTitles, "More..."];
       });
     } catch (error) {
       console.error("Error fetching job titles:", error);
@@ -77,7 +53,7 @@ const JobTitleSelection = () => {
       setLoadingMore(false);
     }
   };
-
+  
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white shadow-lg rounded-lg">
       <h2 className="text-2xl font-bold text-green-700">Select Job Title</h2>
