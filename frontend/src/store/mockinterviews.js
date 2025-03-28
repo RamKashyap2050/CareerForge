@@ -28,7 +28,7 @@ const useMockInterviewStore = create((set, get) => ({
         typeof updateFn === "function" ? updateFn(state.interviewSettings) : updateFn,
     })),
 
-  submitInterviewData: (navigate) => {
+  submitInterviewData: async (navigate) => {
     const { jobTitle, selectedTools, interviewSettings } = get();
     console.log(jobTitle, selectedTools, interviewSettings)
     if (!jobTitle || !selectedTools.length || !interviewSettings.style) {
@@ -44,17 +44,18 @@ const useMockInterviewStore = create((set, get) => ({
 
     console.log("Sending payload:", payload);
 
-    axios
-      .post(`/resume/mockinterviews`, payload)
-      .then((response) => {
-        console.log("Response:", response.data);
-        set({ questions: response.data.data.questions });
-        navigate("/interviews");
-      })
-      .catch((error) => {
-        console.error("Error creating mock interview:", error);
-        alert("There was an error. Please try again.");
-      });
+    try {
+      const response = await axios.post(`/resume/mockinterviews`, payload);
+      console.log("Response:", response.data);
+  
+      set({ questions: response.data.data.questions });
+  
+      // 🚀 Only navigate after everything is done
+      navigate("/interviews");
+    } catch (error) {
+      console.error("Error creating mock interview:", error);
+      alert("There was an error. Please try again.");
+    }
   },
 }));
 

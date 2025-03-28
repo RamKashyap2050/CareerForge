@@ -1,107 +1,83 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FaDownload, FaPrint, FaEdit, FaTrash } from "react-icons/fa";
-
-
+import {
+  FaDownload,
+  FaPrint,
+  FaEdit,
+  FaTrash,
+  FaSpinner,
+} from "react-icons/fa";
+import ResumeCard from "./ResumeCard";
 const ResumeList = ({ onNewResume, onPrint, onDownload, onEdit }) => {
   const [resumes, setResumes] = useState([]);
   const [hover, setHover] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     axios
-      .get("/resume/resumes", {
-        withCredentials: true,
-      })
+      .get("/resume/resumes", { withCredentials: true })
       .then((response) => {
-        console.log(response.data)
         setResumes(response.data);
+        console.log(response.data);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching resumes:", error);
+        setLoading(false);
       });
   }, []);
 
-
   const onDelete = (id) => {
-    // logic for deleting resume
+    // Your delete logic
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <FaSpinner className="animate-spin text-3xl text-blue-600 mr-3" />
+        <span className="text-gray-600 text-lg font-medium">
+          Loading resumes...
+        </span>
+      </div>
+    );
+  }
+
   return (
-    <div className="mt-8 max-w-6xl mx-auto">
-    {/* Header Section */}
-    <div className="flex justify-between items-center bg-gray-800 text-white p-4 rounded-md shadow-lg mb-4">
-      <h2 className="text-xl font-bold">My Resumes</h2>
-      <button
-        className={`px-4 py-2 rounded-md font-semibold tracking-wide uppercase transition-all duration-300 ${
-          hover ? "bg-gray-600" : "bg-gray-700"
-        }`}
-        onClick={onNewResume}
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-      >
-        Create New Resume
-      </button>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      {/* Header */}
+      <div className="w-full mb-6  border-b border-gray-200 pb-4">
+  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h2 className="text-3xl font-semibold tracking-tight text-gray-900">My Resumes</h2>
+      <p className="text-sm text-gray-500 mt-1">Create, update, and manage your resumes below.</p>
     </div>
 
-    {/* Resume Cards */}
-    {resumes.length > 0 ? (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {resumes.map((resume) => (
-          <div key={resume.id} className="bg-white shadow-md rounded-lg p-4 relative hover:shadow-xl transition-all duration-300">
-            <h3 className="text-lg font-semibold mb-2">
-              {resume.resumeBio.FirstName} {resume.resumeBio.LastName}
-            </h3>
-            <p className="text-gray-600 text-sm">{resume.resumeBio.Email}</p>
-            <p className="text-gray-700 text-sm mt-1">
-              <strong>Phone:</strong> {resume.resumeBio.PhoneNumber}
-            </p>
-
-            {/* Resume Status */}
-            <p className={`text-sm font-medium mt-2 italic ${
-              resume.Status === "draft" ? "text-orange-500" : "text-green-600"
-            }`}>
-              {resume.Status === "draft" ? "Draft" : "Completed"}
-            </p>
-
-            {/* Actions */}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {resume.Status === "Completed" && (
-                <>
-                  <button
-                    className="flex items-center bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 transition-all"
-                    onClick={() => onDownload(resume.id)}
-                  >
-                    <FaDownload className="mr-2" /> Download
-                  </button>
-                  <button
-                    className="flex items-center bg-gray-600 text-white px-3 py-1 rounded-md hover:bg-gray-700 transition-all"
-                    onClick={() => onPrint(resume.id)}
-                  >
-                    <FaPrint className="mr-2" /> Print
-                  </button>
-                </>
-              )}
-
-              <button
-                className="flex items-center bg-yellow-500 text-white px-3 py-1 rounded-md hover:bg-yellow-600 transition-all"
-                onClick={() => onEdit(resume.id)}
-              >
-                <FaEdit className="mr-2" /> Edit
-              </button>
-
-              <button
-                className="flex items-center bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 transition-all"
-                onClick={() => onDelete(resume.id)}
-              >
-                <FaTrash className="mr-2" /> Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    ) : (
-      <p className="text-center text-gray-600 mt-4">No resumes available. Please create a new resume.</p>
-    )}
+    <button
+      onClick={onNewResume}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      className={`px-5 py-2.5 rounded-md font-medium text-sm border transition duration-200
+        ${hover ? "border-gray-300 bg-gray-50" : "border-gray-200 bg-white"}`}
+    >
+      + Create Resume
+    </button>
   </div>
+</div>
+
+
+      {/* Resume Cards */}
+      {resumes.length > 0 ? (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {resumes.map((resume, index) => (
+            <ResumeCard key={resume.id} resume={resume} onEdit={onEdit} onPrint={onDownload} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-gray-600 mt-8 text-lg">
+          No resumes found. Click "Create Resume" to start building.
+        </p>
+      )}
+    </div>
   );
 };
 

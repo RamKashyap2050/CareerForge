@@ -1,5 +1,5 @@
-import React from "react";
-import { Container, Typography, Box, Button } from "@mui/material";
+import React, { useState } from "react";
+import { CircularProgress } from "@mui/material"; // Spinner
 import JobTitleSelection from "../Components/JobTitleSelection";
 import ToolSelection from "../Components/ToolSelection";
 import InterviewSettings from "../Components/InterviewSettings";
@@ -14,16 +14,27 @@ const PrepareInterviews = () => {
     (state) => state.submitInterviewData
   );
 
+  const [loading, setLoading] = useState(false);
+
   const handleSubmit = async () => {
-    console.log("Button clicked!"); // Add this log
+    if (loading) return;
+    setLoading(true);
+    console.log(loading)
+    console.log("Button clicked!");
     console.log("Calling submitInterviewData with navigate:", navigate);
-    submitInterviewData(navigate);
+    try {
+     await submitInterviewData(navigate); 
+    } catch (err) {
+      console.error("Interview start error:", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <>
       <Navbar />
       <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-6 my-10">
-        {/* Header Section */}
         <h2 className="text-2xl font-bold text-teal-700 text-center mb-2">
           🎤 Mock Interview Panel
         </h2>
@@ -32,28 +43,35 @@ const PrepareInterviews = () => {
           experience.
         </p>
 
-        {/* Job Title Selection */}
         <div className="mb-6">
           <JobTitleSelection />
         </div>
 
-        {/* Tool Selection */}
         <div className="mb-6">
           <ToolSelection />
         </div>
 
-        {/* Interview Settings */}
         <div className="mb-6">
           <InterviewSettings />
         </div>
 
-        {/* Submit Button */}
+        {/* Button with Spinner */}
         <div className="mt-6 text-center">
           <button
-            className="w-full bg-gradient-to-r from-teal-600 to-blue-500 text-white font-semibold text-lg py-3 rounded-md shadow-md hover:scale-105 transition-all duration-300"
+            className={`w-full bg-gradient-to-r from-teal-600 to-blue-500 text-white font-semibold text-lg py-3 rounded-md shadow-md hover:scale-105 transition-all duration-300 flex justify-center items-center ${
+              loading ? "cursor-not-allowed opacity-75" : ""
+            }`}
             onClick={handleSubmit}
+            disabled={loading}
           >
-            🚀 Start Interview
+            {loading ? (
+              <>
+                <CircularProgress size={24} sx={{ color: "white", marginRight: 1 }} />
+                Preparing your interview...
+              </>
+            ) : (
+              "🚀 Start Interview"
+            )}
           </button>
         </div>
       </div>

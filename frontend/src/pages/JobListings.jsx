@@ -47,7 +47,7 @@ const JobListings = () => {
   const handleJobListingsFetched = (data) => {
     setJobData(data.data); // Set the job listings fetched from the backend
   };
-
+console.log(selectedJob)
   return (
     <>
       <Navbar />
@@ -152,7 +152,7 @@ const JobListings = () => {
                     Benefits
                   </h3>
                   <ul className="list-disc pl-6 text-gray-700">
-                    {selectedJob.benefits.map((benefit, index) => (
+                    {Array.isArray(selectedJob.benefits) && selectedJob.benefits.map((benefit, index) => (
                       <li key={index}>{benefit}</li>
                     ))}
                   </ul>
