@@ -626,7 +626,6 @@ const mockinterviews = expressAsyncHandler(async (req, res) => {
       messages: [{ role: "user", content: prompt }],
     });
 
-    // Get response text
     let generatedOutput = completion.choices[0].message.content;
 
     // Clean up response by removing Markdown formatting
@@ -634,6 +633,7 @@ const mockinterviews = expressAsyncHandler(async (req, res) => {
 
     // Parse JSON
     const structuredOutput = JSON.parse(generatedOutput);
+
 
     res.status(200).json({
       success: true,

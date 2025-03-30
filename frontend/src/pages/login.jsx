@@ -1,12 +1,4 @@
 import React, { useState } from "react";
-import {
-  Container,
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Link,
-} from "@mui/material";
 import useAuthStore from "../store/auth"; // Import the Zustand store
 import { useNavigate } from "react-router-dom";
 
@@ -31,74 +23,66 @@ const Login = () => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          boxShadow: 3,
-          padding: 3,
-          borderRadius: 2,
-        }}
-      >
-        <Typography component="h1" variant="h5">
-          Login
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
+    <div className="w-full max-w-xs bg-white rounded-2xl shadow-xl p-6 sm:p-8">
+      <h2 className="text-2xl font-bold text-center text-gray-800">Login</h2>
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            Email Address
+          </label>
+          <input
             id="email"
-            label="Email Address"
             name="email"
+            type="email"
             autoComplete="email"
-            autoFocus
+            required
             value={formData.email}
             onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            Password
+          </label>
+          <input
             id="password"
+            name="password"
+            type="password"
             autoComplete="current-password"
+            required
             value={formData.password}
             onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
           />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Login
-          </Button>
+        </div>
 
-          <Button
-            fullWidth
-            variant="outlined"
-            color="primary"
-            sx={{ mt: 1, mb: 2 }}
-            href="/auth/google"
-          >
-            Sign in with Google
-          </Button>
+        <button
+          type="submit"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition duration-300"
+        >
+          Login
+        </button>
 
-          <Typography variant="body2" color="text.secondary" align="center">
-            Don’t have an account?{" "}
-            <Link href="/signup" variant="body2">
-              Sign up
-            </Link>
-          </Typography>
-        </Box>
-      </Box>
-    </Container>
+        <a
+          href="/auth/google"
+          className="w-full block text-center border border-blue-600 text-blue-600 font-medium py-2 rounded-lg hover:bg-blue-50 transition duration-300"
+        >
+          Sign in with Google
+        </a>
+
+        <p className="text-sm text-center text-gray-600">
+          Don’t have an account?{" "}
+          <a href="/signup" className="text-blue-600 hover:underline font-medium">
+            Sign up
+          </a>
+        </p>
+      </form>
+    </div>
+  </div>
   );
 };
 
