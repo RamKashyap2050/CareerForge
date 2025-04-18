@@ -1,32 +1,15 @@
-const chromium =
-  process.env.NODE_ENV === "production" ? require("@sparticuz/chromium") : null;
-const puppeteer =
-  process.env.NODE_ENV === "production"
-    ? require("puppeteer-core")
-    : require("puppeteer");
+// ✅ UPDATED: GlassdoorScrapper.js using ScraperAPI
+const axios = require("axios");
+const cheerio = require("cheerio");
+
+const SCRAPER_API_KEY = process.env.SCRAPER_KEY;
+const SCRAPER_API_BASE = `http://api.scraperapi.com?api_key=${SCRAPER_API_KEY}&render=true&url=`;
 
 async function scrapeGlassdoorJobs(
   searchQuery,
   location = "Remote",
   pagesToScrape = 2
 ) {
-  const isProduction = process.env.NODE_ENV === "production";
-
-  const browser = await puppeteer.launch({
-    args: isProduction ? chromium.args : [],
-    defaultViewport: chromium ? chromium.defaultViewport : null,
-    executablePath: isProduction ? await chromium.executablePath : undefined, // Use default executable in development
-    headless: isProduction ? chromium.headless : false, // Use non-headless in dev for debugging
-    ignoreHTTPSErrors: true,
-    ignoreDefaultArgs: ['--disable-extensions']
-  });
-
-  const page = await browser.newPage();
-
-  await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
-  );
-
   let jobs = [];
 
   for (let pageNum = 0; pageNum < pagesToScrape; pageNum++) {
@@ -37,52 +20,45 @@ async function scrapeGlassdoorJobs(
     )}&jobType=&fromAge=-1&radius=0&minSalary=0&includeNoSalaryJobs=true&sortBy=date_desc&start=${
       pageNum * 10
     }`;
-
-    console.log(`Navigating to: ${searchURL}`);
+    console.log(searchURL)
+    const scraperURL = `${SCRAPER_API_BASE}${encodeURIComponent(searchURL)}`;
     try {
-      await page.goto(searchURL, {
-        waitUntil: "networkidle2",
-        timeout: 60000,
+      const response = await axios.get(scraperURL, {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36",
+        },
       });
 
-      await page.waitForSelector("li[data-test='jobListing']", {
-        timeout: 20000,
-      });
+      const $ = cheerio.load(response.data);
 
-      const jobsOnPage = await page.evaluate(() => {
-        const jobElements = document.querySelectorAll(
-          "li[data-test='jobListing']"
-        );
-        let jobListings = [];
+      // First: Try parsing DOM-based listings (may fail if Glassdoor uses client-side rendering)
+      const domJobs = $("li[data-test='jobListing']");
+      if (domJobs.length > 0) {
+        domJobs.each((_, job) => {
+          const title =
+            $(job).find("a[data-test='job-title']").text().trim() || "No title";
+          const company =
+            $(job)
+              .find(".EmployerProfile_compactEmployerName__9MGcV")
+              .text()
+              .trim() || "No company";
+          const location =
+            $(job).find("div[data-test='emp-location']").text().trim() ||
+            "No location";
+          const salary =
+            $(job).find("div[data-test='detailSalary']").text().trim() ||
+            "No salary";
+          let href = $(job).find("a[data-test='job-title']").attr("href");
 
-        jobElements.forEach((job) => {
-          const titleElement = job.querySelector("a[data-test='job-title']");
-          const companyElement = job.querySelector(
-            ".EmployerProfile_compactEmployerName__LE242"
-          );
-          const locationElement = job.querySelector(
-            "div[data-test='emp-location']"
-          );
-          const salaryElement = job.querySelector(
-            "div[data-test='detailSalary']"
-          );
-          const urlElement = job.querySelector("a[data-test='job-title']");
+          let url = "No URL";
+          if (href) {
+            url = href.startsWith("http")
+              ? href
+              : `https://www.glassdoor.ca${href}`;
+          }
 
-          const title = titleElement
-            ? titleElement.innerText.trim()
-            : "No title";
-          const company = companyElement
-            ? companyElement.innerText.trim()
-            : "No company name";
-          const location = locationElement
-            ? locationElement.innerText.trim()
-            : "No location";
-          const salary = salaryElement
-            ? salaryElement.innerText.trim()
-            : "No salary info";
-          const url = urlElement ? urlElement.href : "No URL";
-
-          jobListings.push({
+          jobs.push({
             title,
             company,
             location,
@@ -91,90 +67,87 @@ async function scrapeGlassdoorJobs(
             jobSite: "Glassdoor",
           });
         });
-
-        return jobListings;
-      });
-
-      jobs = [...jobs, ...jobsOnPage];
+      } else {
+        // Fallback: Extract from structured JSON if DOM parsing fails
+        const jsonScript = $("script[type='application/ld+json']").html();
+        if (jsonScript) {
+          try {
+            const jsonData = JSON.parse(jsonScript);
+            if (Array.isArray(jsonData.itemListElement)) {
+              jsonData.itemListElement.forEach((item) => {
+                const jobUrl = item.url || "No URL";
+                jobs.push({
+                  title: "Unknown (use detail scraper)",
+                  company: "Unknown",
+                  location: "Unknown",
+                  salary: "Unknown",
+                  url: jobUrl,
+                  jobSite: "Glassdoor",
+                });
+              });
+            }
+          } catch (jsonErr) {
+            console.error("Failed to parse ld+json:", jsonErr.message);
+          }
+        }
+      }
     } catch (error) {
-      console.error(`Error scraping ${searchURL}: ${error.message}`);
+      console.error(
+        `Error scraping Glassdoor (page ${pageNum}):`,
+        error.message
+      );
     }
   }
 
-  console.log(`Total jobs scraped: ${jobs.length}`);
-  await browser.close();
   return jobs;
 }
 
+// Keep Puppeteer for dynamic job detail scraping
+const isProduction = process.env.NODE_ENV === "production";
+const puppeteer = isProduction
+  ? require("puppeteer-core")
+  : require("puppeteer");
+const chromium = isProduction ? require("@sparticuz/chromium") : null;
+
 async function scrapeGlassdoorJobDetails(jobUrl) {
-  const isProduction = process.env.NODE_ENV === "production";
-  console.log(jobUrl);
-  const browser = await puppeteer.launch({
-    args: isProduction ? chromium.args : [],
-    executablePath: isProduction ? await chromium.executablePath : undefined,
-    headless: isProduction ? chromium.headless : true, // Headless by default for local
-    ignoreDefaultArgs: ["--disable-extensions"],
-  });
+  const scraperURL = `${SCRAPER_API_BASE}${jobUrl}`;
+  console.log(jobUrl)
 
-  const page = await browser.newPage();
+  try {
+    const response = await axios.get(scraperURL, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36",
+      },
+    });
 
-  await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
-  );
+    const $ = cheerio.load(response.data);
 
-  await page.goto(jobUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
+    // First try DOM-based selectors
+    let jobTitle = $("h2[class*='jobTitle'], h1[class*='heading_Level1']").text().trim() || "Not available";
+    let company = $("h4[class*='heading_Subhead']").text().trim() || "Not available";
+    let jobDescription = $("div[class*='JobDetails_jobDescription']").text().trim() || "Not available";
+    let pay = $("div[id^='jd-salary']").text().trim() || "Not available";
+    let benefits = $("div[class*='SalaryEstimate_salaryDisclosure']").text().trim() || "Not available";
+    let location = $("div[data-test='location']").text().trim() || "Not available";
 
-  const jobDetails = await page.evaluate(() => {
-    const jobTitleElement = document.querySelector("h1.heading_Level1__soLZs");
-    const jobTitle = jobTitleElement
-      ? jobTitleElement.innerText.trim()
-      : "No job title available.";
+    // Fallback to JSON-LD if jobTitle is still not found
+    if (jobTitle === "Not available") {
+      const jsonLD = $("script[type='application/ld+json']").html();
+      if (jsonLD) {
+        const parsed = JSON.parse(jsonLD);
+        if (parsed.title) jobTitle = parsed.title;
+        if (parsed.hiringOrganization?.name) company = parsed.hiringOrganization.name;
+        if (parsed.description) jobDescription = parsed.description.replace(/<\/?[^>]+(>|$)/g, "").trim();
+        if (parsed.jobLocation?.address?.addressLocality) location = parsed.jobLocation.address.addressLocality;
+      }
+    }
 
-    const companyElement = document.querySelector("h4.heading_Subhead__Ip1aW");
-    const company = companyElement
-      ? companyElement.innerText.trim()
-      : "No company name available.";
-
-    const jobDescriptionElement = document.querySelector(
-      ".JobDetails_jobDescription__uW_fK"
-    );
-    const jobDescription = jobDescriptionElement
-      ? jobDescriptionElement.innerText.trim()
-      : "No job description available.";
-
-    const payElement = document.querySelector(
-      ".SalaryEstimate_salaryRange__brHFy"
-    );
-    const pay = payElement
-      ? payElement.innerText.trim()
-      : "No salary information available.";
-
-    const benefitsElement = document.querySelector(
-      ".SalaryEstimate_salaryDisclosure__wmX4V"
-    );
-    const benefits = benefitsElement
-      ? benefitsElement.innerText.trim()
-      : "No benefits information available.";
-
-    const locationElement = document.querySelector(
-      ".JobDetails_location__mSg5h"
-    );
-    const location = locationElement
-      ? locationElement.innerText.trim()
-      : "No location provided.";
-
-    return {
-      jobTitle,
-      company,
-      jobDescription,
-      pay,
-      benefits,
-      location,
-    };
-  });
-
-  await browser.close();
-  return jobDetails;
+    return { jobTitle, company, jobDescription, pay, benefits, location };
+  } catch (err) {
+    console.error("❌ Failed to scrape Glassdoor job details:", err.message);
+    return null;
+  }
 }
-
 module.exports = { scrapeGlassdoorJobs, scrapeGlassdoorJobDetails };
+

@@ -1,113 +1,122 @@
-// Conditionally load `puppeteer-core` and `@sparticuz/chromium` in production
 const isProduction = process.env.NODE_ENV === "production";
-
-// Use `puppeteer-extra` as the main library, which can use `puppeteer-core` in production
 const puppeteer = require("puppeteer-extra");
-
-// Use `puppeteer-core` and `@sparticuz/chromium` only in production
 let chromium;
+
 if (isProduction) {
   puppeteer.use(require("puppeteer-extra-plugin-stealth")());
   chromium = require("@sparticuz/chromium");
 }
 
-async function scrapeIndeedJobs(searchQuery, location = "Remote", pagesToScrape = 1) {
-  // Set up Puppeteer launch configuration
-  const browser = await puppeteer.launch({
-    args: isProduction ? chromium.args : [],
-    executablePath: isProduction ? await chromium.executablePath : undefined, // Only use executablePath in production
-    headless: isProduction ? chromium.headless : false, // Headless in production only
-    ignoreHTTPSErrors: true,
-    ignoreDefaultArgs: ["--disable-extensions"],
-  });
+const axios = require("axios");
+const cheerio = require("cheerio");
 
-  const page = await browser.newPage();
+const SCRAPER_API_KEY = process.env.SCRAPER_KEY;
+const SCRAPER_API_BASE = `http://api.scraperapi.com?api_key=${SCRAPER_API_KEY}&render=true&url=`;
 
-  await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
-  );
-
-  let jobs = [];
+// Main search scraper
+async function scrapeIndeedJobs(
+  searchQuery,
+  location = "Remote",
+  pagesToScrape = 1
+) {
+  const jobs = [];
 
   for (let pageNum = 0; pageNum < pagesToScrape; pageNum++) {
-    const searchURL = `https://ca.indeed.com/jobs?q=${encodeURIComponent(searchQuery)}&l=${encodeURIComponent(location)}&start=${pageNum * 10}`;
-    console.log(`Navigating to: ${searchURL}`);
-    
+    const searchURL = `https://ca.indeed.com/jobs?q=${encodeURIComponent(
+      searchQuery
+    )}&l=${encodeURIComponent(location)}&start=${pageNum * 10}`;
+    const scraperURL = `${SCRAPER_API_BASE}${encodeURIComponent(searchURL)}`;
+    console.log(searchURL)
     try {
-      await page.goto(searchURL, { waitUntil: "domcontentloaded", timeout: 60000 });
-      await page.waitForSelector("#mosaic-provider-jobcards .job_seen_beacon", { timeout: 60000 });
+      const response = await axios.get(scraperURL);
+      const $ = cheerio.load(response.data);
 
-      const jobsOnPage = await page.evaluate(() => {
-        const jobElements = document.querySelectorAll("#mosaic-provider-jobcards .job_seen_beacon");
-        let jobListings = [];
+      // Selector block: More flexible & fallback added
+      $("li.css-1ac2h1w.eu4oa1w0").each((_, job) => {
+        const title =
+          $(job).find("h2.jobTitle span[title]").text().trim() ||
+          $(job).find("h2.jobTitle span").text().trim() ||
+          "No title";
 
-        jobElements.forEach((job) => {
-          const titleElement = job.querySelector("h2.jobTitle span");
-          const companyElement = job.querySelector("span[data-testid='company-name']");
-          const locationElement = job.querySelector("[data-testid='text-location']");
-          const urlElement = job.querySelector("h2.jobTitle a");
+        const company =
+          $(job).find("span[data-testid='company-name']").text().trim() ||
+          "No company";
+        const location =
+          $(job).find("[data-testid='text-location']").text().trim() ||
+          "No location";
+        const href = $(job).find("h2.jobTitle a").attr("href");
+        const url = href ? `https://ca.indeed.com${href}` : "No URL";
 
-          const title = titleElement ? titleElement.innerText.trim() : "No title";
-          const company = companyElement ? companyElement.innerText.trim() : "No company name";
-          const location = locationElement ? locationElement.innerText.trim() : "No location";
-          const url = urlElement ? `https://ca.indeed.com${urlElement.getAttribute("href")}` : "No URL";
-
-          jobListings.push({ title, company, location, url, jobSite: "Indeed" });
-        });
-
-        return jobListings;
+        jobs.push({ title, company, location, url, jobSite: "Indeed" });
       });
-
-      jobs = [...jobs, ...jobsOnPage];
-    } catch (error) {
-      console.error(`Error scraping ${searchURL}: ${error.message}`);
+    } catch (err) {
+      console.error(`Error scraping ${searchURL}:`, err.message);
     }
   }
 
-  console.log(`Total jobs scraped: ${jobs.length}`);
-  await browser.close();
   return jobs;
 }
 
+// Detail page scraper
 async function scrapeJobDetailsFromUrl(jobUrl) {
-  const browser = await puppeteer.launch({
-    args: isProduction ? chromium.args : [],
-    executablePath: isProduction ? await chromium.executablePath : undefined,
-    headless: isProduction ? chromium.headless : true,
-  });
+  const scraperURL = `${SCRAPER_API_BASE}${encodeURIComponent(jobUrl)}`;
+  try {
+    const response = await axios.get(scraperURL);
+    const $ = cheerio.load(response.data);
 
-  const page = await browser.newPage();
+    const jobDescription =
+      $("#jobDescriptionText").text().trim() ||
+      $("div.jobsearch-jobDescriptionText").text().trim() ||
+      "No job description available.";
 
-  await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
-  );
+    const skills =
+      $("[aria-label='Skills'] h3").text().trim() ||
+      $("div.jobsearch-ReqAndQualSection-sectionItem span").text().trim() ||
+      "No skills information.";
 
-  await page.goto(jobUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
+    const pay =
+      $("[aria-label='Pay'] li").first().text().trim() ||
+      $("span.salary-snippet").first().text().trim() ||
+      "No salary information.";
 
-  const jobDetails = await page.evaluate(() => {
-    const jobDescriptionElement = document.querySelector("#jobDescriptionText");
-    const jobDescription = jobDescriptionElement ? jobDescriptionElement.innerText.trim() : "No job description available.";
+    const benefits = $("#benefits ul li")
+      .map((_, li) => $(li).text().trim())
+      .get();
+    const benefitsText =
+      benefits.length > 0 ? benefits : "No benefits information.";
 
-    const skillsElement = document.querySelector("[aria-label='Skills'] h3");
-    const skills = skillsElement ? skillsElement.innerText.trim() : "No skills information.";
+    const jobType =
+      $("[aria-label='Job type'] li").first().text().trim() ||
+      $("div.jobsearch-JobMetadataHeader-item").text().trim() ||
+      "No job type information.";
 
-    const payElement = document.querySelector("[aria-label='Pay'] ul li");
-    const pay = payElement ? payElement.innerText.trim() : "No salary information.";
+    const location =
+      $("#jobLocationText div").first().text().trim() ||
+      $("div.jobsearch-CompanyInfoWithoutHeaderImage div")
+        .last()
+        .text()
+        .trim() ||
+      "No location provided.";
 
-    const benefitsElement = document.querySelector("#benefits ul");
-    const benefits = benefitsElement ? Array.from(benefitsElement.querySelectorAll("li")).map((li) => li.innerText.trim()) : "No benefits information.";
-
-    const jobTypeElement = document.querySelector("[aria-label='Job type'] ul li");
-    const jobType = jobTypeElement ? jobTypeElement.innerText.trim() : "No job type information.";
-
-    const locationElement = document.querySelector("#jobLocationText div");
-    const location = locationElement ? locationElement.innerText.trim() : "No location provided.";
-
-    return { jobDescription, skills, pay, benefits, jobType, location };
-  });
-
-  await browser.close();
-  return jobDetails;
+    return {
+      jobDescription,
+      skills,
+      pay,
+      benefits: benefitsText,
+      jobType,
+      location,
+    };
+  } catch (err) {
+    console.error("Error scraping job detail via ScraperAPI:", err.message);
+    return {
+      jobDescription: "No job description available.",
+      skills: "No skills information.",
+      pay: "No salary information.",
+      benefits: "No benefits information.",
+      jobType: "No job type information.",
+      location: "No location provided.",
+    };
+  }
 }
 
 module.exports = { scrapeIndeedJobs, scrapeJobDetailsFromUrl };

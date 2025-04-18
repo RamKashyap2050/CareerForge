@@ -118,7 +118,7 @@ import {
             Edit
           </button>
           <button
-            onClick={() => onPrint(resume)}
+            onClick={() => onPrint(resume.id)}
             className="px-4 py-2 border border-gray-400 text-gray-700 rounded hover:bg-gray-100 transition"
           >
             Download PDF

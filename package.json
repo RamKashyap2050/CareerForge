@@ -11,9 +11,11 @@
   "dependencies": {
     "@google/generative-ai": "^0.17.1",
     "@sparticuz/chromium": "^130.0.0",
+    "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
+    "cheerio": "^1.0.0",
     "chrome-aws-lambda": "^10.1.0",
     "connect-pg-simple": "^10.0.0",
     "connect-redis": "^7.1.1",
@@ -45,6 +47,7 @@
     "redis": "^4.7.0",
     "sequelize": "^6.37.3",
     "user-agents": "^1.1.325",
+    "uuid": "^11.1.0",
     "vercel": "^37.2.1"
   }
 }

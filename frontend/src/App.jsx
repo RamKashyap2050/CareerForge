@@ -8,7 +8,9 @@ import CreateCustomResume from "./pages/CreateCustomResume";
 import JobListings from "./pages/JobListings";
 import PrepareInterviews from "./pages/PrepareInterviews";
 import MockInterview from "./pages/MockInterview";
-
+import LinkedInResumeParser from "./pages/LinkedInProfileParser";
+import Problems from "./pages/Problems";
+import IndividualProblem from "./pages/InduvidualProblems";
 const App = () => {
   return (
     <Router>
@@ -21,6 +23,10 @@ const App = () => {
         <Route path="/joblistings" element={<JobListings />} />
         <Route path="/mockinterviews" element={<PrepareInterviews />} />
         <Route path="/interviews" element={<MockInterview />} />
+        <Route path="/LinkedinProfile" element={<LinkedInResumeParser />} />
+        <Route path="/LinkedinProfile" element={<LinkedInResumeParser />} />
+        <Route path="/Problems" element={<Problems />} />
+        <Route path="/InduvidualProblem/:problemID" element={<IndividualProblem />} />
       </Routes>
     </Router>
   );
