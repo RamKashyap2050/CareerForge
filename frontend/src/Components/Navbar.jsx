@@ -24,7 +24,7 @@ const Navbar = () => {
           className="text-2xl font-bold cursor-pointer tracking-wide hover:text-blue-400 transition"
           onClick={() => navigate("/")}
         >
-          JobGenieX 🚀
+          JobGenieX 
         </h1>
 
         {/* Desktop Nav */}
@@ -63,6 +63,12 @@ const Navbar = () => {
                     className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
                   >
                     Mock Interviews
+                  </span>
+                  <span
+                    onClick={() => navigate("/home")}
+                    className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
+                  >
+                    Post Content
                   </span>
                 </div>
               </div>

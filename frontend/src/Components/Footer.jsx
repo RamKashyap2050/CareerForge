@@ -6,7 +6,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Side: Branding and Info */}
         <div>
-          <h2 className="text-2xl font-bold">Career Forge</h2>
+          <h2 className="text-2xl font-bold">JobGenieX</h2>
           <p className="mt-3 text-gray-300 text-sm leading-relaxed">
             Your pathway to the next great job opportunity. Build, refine, and
             optimize resumes powered by AI. Tailored resumes. Curated job listings. 
@@ -35,7 +35,7 @@ const Footer = () => {
       </div>
       
       <div className="mt-10 text-center text-gray-500 text-sm">
-        &copy; {new Date().getFullYear()} Career Forge. All rights reserved.
+        &copy; {new Date().getFullYear()} JobGenieX. All rights reserved.
       </div>
     </footer>
   );

@@ -12,6 +12,7 @@ import LinkedInResumeParser from "./pages/LinkedInProfileParser";
 import Problems from "./pages/Problems";
 import IndividualProblem from "./pages/InduvidualProblems";
 import JobStrategyBoard from "./pages/JobStrategyBoard";
+import HomePage from "./pages/HomePage";
 const App = () => {
   return (
     <Router>
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/customresume" element={<CreateCustomResume />} />
         <Route path="/joblistings" element={<JobListings />} />
         <Route path="/mockinterviews" element={<PrepareInterviews />} />
@@ -27,8 +29,11 @@ const App = () => {
         <Route path="/LinkedinProfile" element={<LinkedInResumeParser />} />
         <Route path="/LinkedinProfile" element={<LinkedInResumeParser />} />
         <Route path="/Problems" element={<Problems />} />
-        <Route path="/InduvidualProblem/:problemID" element={<IndividualProblem />} />
-        <Route path="/jobstrategy" element={<JobStrategyBoard /> } />
+        <Route
+          path="/InduvidualProblem/:problemID"
+          element={<IndividualProblem />}
+        />
+        <Route path="/jobstrategy" element={<JobStrategyBoard />} />
       </Routes>
     </Router>
   );
