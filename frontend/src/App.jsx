@@ -11,6 +11,7 @@ import MockInterview from "./pages/MockInterview";
 import LinkedInResumeParser from "./pages/LinkedInProfileParser";
 import Problems from "./pages/Problems";
 import IndividualProblem from "./pages/InduvidualProblems";
+import JobStrategyBoard from "./pages/JobStrategyBoard";
 const App = () => {
   return (
     <Router>
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/LinkedinProfile" element={<LinkedInResumeParser />} />
         <Route path="/Problems" element={<Problems />} />
         <Route path="/InduvidualProblem/:problemID" element={<IndividualProblem />} />
+        <Route path="/jobstrategy" element={<JobStrategyBoard /> } />
       </Routes>
     </Router>
   );
