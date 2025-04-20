@@ -13,7 +13,7 @@ const uploadImageToS3 = async (file) => {
 
   const params = {
     Bucket: "example-aws-bucket-trial-for-farmerplace",
-    Key: `FarmerPlace/${file.name}`,
+    Key: `JobGenieX/${file.name}`,
     Body: file.data,
     ContentType: file.mimetype,
   };

@@ -36,7 +36,7 @@ const useAuthStore = create((set) => ({
       set({ user });
 
       // Store the token
-      localStorage.setItem("token", token);
+      localStorage.setItem("token", user.id);
       navigate("/dashboard");
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);

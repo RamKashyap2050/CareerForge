@@ -4,9 +4,11 @@ require("pg");
 // const initAssociations = require("./models/initAssociations")
 const sequelize = require("./config/db");
 require("dotenv").config();
+const connectDB = require("./config/MongoDb");
 const resumeRoutes = require("../backend/routes/resumeRoutes");
 const userRoutes = require("../backend/routes/userRoutes");
 const mockinterviewsRoutes = require("../backend/routes/mockInterview");
+connectDB();
 const app = express();
 const cors = require("cors");
 const session = require("express-session");

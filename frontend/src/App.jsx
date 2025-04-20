@@ -13,6 +13,7 @@ import Problems from "./pages/Problems";
 import IndividualProblem from "./pages/InduvidualProblems";
 import JobStrategyBoard from "./pages/JobStrategyBoard";
 import HomePage from "./pages/HomePage";
+import ProfilePage from "./pages/UserProfile";
 const App = () => {
   return (
     <Router>
@@ -34,6 +35,7 @@ const App = () => {
           element={<IndividualProblem />}
         />
         <Route path="/jobstrategy" element={<JobStrategyBoard />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </Router>
   );

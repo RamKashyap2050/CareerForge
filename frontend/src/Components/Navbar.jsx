@@ -4,6 +4,7 @@ import { FiMenu, FiX, FiLogOut } from "react-icons/fi";
 import { MdDashboard, MdWork, MdOutlineSmartToy } from "react-icons/md";
 import { AiOutlineFileText } from "react-icons/ai";
 import { FaLinkedin, FaCode } from "react-icons/fa";
+import { CgProfile } from "react-icons/cg";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,7 +25,7 @@ const Navbar = () => {
           className="text-2xl font-bold cursor-pointer tracking-wide hover:text-blue-400 transition"
           onClick={() => navigate("/")}
         >
-          JobGenieX 
+          JobGenieX
         </h1>
 
         {/* Desktop Nav */}
@@ -109,6 +110,12 @@ const Navbar = () => {
             <MdWork size={20} /> Job Listings
           </button>
 
+          <button
+            onClick={() => navigate("/profile")}
+            className="flex items-center gap-2 text-sm font-medium hover:text-blue-400 transition"
+          >
+            <CgProfile size={20} /> Profile
+          </button>
           <button
             className="flex items-center gap-2 text-sm font-medium text-red-400 hover:text-red-500 transition"
             onClick={handleLogout}

@@ -6,43 +6,69 @@ const expressAsyncHandler = require("express-async-handler");
 const router = express.Router();
 const passport = require("passport");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const MongoUser = require("../models/MongoUser"); // MongoDB model
+const { uploadImageToS3 } = require("../s3/s3");
 
-const signup = expressAsyncHandler(async (req, res) => {
+const signup = expressAsyncHandler(async (req, res, next) => {
   try {
-    const { email, password, profilePhoto } = req.body;
-    console.log(email, password, profilePhoto);
+    const { email, password, profilePhoto, username } = req.body;
+
+    // Check if user exists
     const userExists = await User.findOne({ where: { email } });
     if (userExists) {
       return res.status(400).json({ message: "Email is already in use." });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword);
-    console.log("Request Body:", req.body);
 
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create SQL user
     const user = await User.create({
       email: email,
       password: hashedPassword,
       image: profilePhoto,
     });
 
-    console.log("User creation result:", user);
+    // Create MongoDB user profile linked by sqlUserId
+    const mongoUser = await MongoUser.create({
+      sqlUserId: user.id,
+      username: username || email.split("@")[0], // fallback to email prefix if username not given
+      profilePhoto: profilePhoto,
+      bio: "",
+      defaultResumeId: null,
+      jobPreferences: {
+        role: "",
+        remote: false,
+        location: "",
+        salaryRange: "",
+      },
+      linkedAccounts: {
+        github: "",
+        linkedin: "",
+      },
+    });
+
+    console.log("Mongo User Created:", mongoUser);
+
+    // Auto login
     req.login(user, (err) => {
-      if (err) {
-        return next(err);
-      }
+      if (err) return next(err);
       return res.status(201).json({
         message: "User registered and logged in successfully",
         user: {
           id: user.id,
           email: user.email,
-          profilePhoto: user.ProfilePhoto,
+          profilePhoto: user.image,
         },
       });
     });
   } catch (error) {
+    console.error("Signup error:", error);
     res.status(500).json({ error: error.message });
   }
 });
+
+module.exports = signup;
 
 const login = expressAsyncHandler(async (req, res, next) => {
   console.log("Request Body:", req.body); // Log the request body
@@ -164,6 +190,66 @@ const isAuthenticated = expressAsyncHandler((req, res, next) => {
   res.status(401).json({ message: "Unauthorized" });
 });
 
+const updateUserProfile = expressAsyncHandler(async (req, res) => {
+  const sqlUserId = req.user.id; // assuming you store SQL ID in session/JWT
+
+  try {
+    const updatedData = req.body;
+    console.log(updatedData);
+    // Ensure nested fields are respected using $set
+    await MongoUser.updateOne({ sqlUserId }, { $set: updatedData });
+
+    const updatedUser = await MongoUser.findOne({ sqlUserId });
+
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    console.error("MongoDB Profile Update Failed:", err);
+    res.status(500).json({ error: "Profile update failed" });
+  }
+});
+
+const updateProfilePhoto = expressAsyncHandler(async (req, res) => {
+  const sqlUserId = req.user.id;
+
+  try {
+    if (!req.files || !req.files.profilePhoto) {
+      return res.status(400).json({ error: "No image file provided" });
+    }
+
+    const file = req.files.profilePhoto;
+    const imageUrl = await uploadImageToS3(file);
+
+    await MongoUser.updateOne(
+      { sqlUserId },
+      { $set: { profilePhoto: imageUrl } }
+    );
+
+    const updatedUser = await MongoUser.findOne({ sqlUserId });
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    console.error("Error updating profile image:", err);
+    res.status(500).json({ error: "Image upload failed" });
+  }
+});
+
+const getUserProfile = expressAsyncHandler(async (req, res) => {
+  const sqlUserId = req.user?.id; // Ensure this is populated by middleware (e.g. Passport/JWT)
+
+  if (!sqlUserId) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: No SQL User ID found." });
+  }
+
+  const mongoProfile = await MongoUser.findOne({ sqlUserId });
+
+  if (!mongoProfile) {
+    return res.status(404).json({ message: "Profile not found in MongoDB" });
+  }
+
+  res.status(200).json(mongoProfile);
+});
+
 module.exports = {
   login,
   signup,
@@ -172,4 +258,7 @@ module.exports = {
   logout,
   isAuthenticated,
   SummarySuggest,
+  updateUserProfile,
+  getUserProfile,
+  updateProfilePhoto,
 };
