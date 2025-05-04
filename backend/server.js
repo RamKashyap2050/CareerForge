@@ -20,6 +20,7 @@ const { applyAssociations } = require("./models/associations");
 const ScrapperRoutes = require("../backend/routes/ScrapperRoutes");
 const cookieParser = require("cookie-parser");
 
+
 app.use(cors());
 // Your CORS setup (customize as per your environment)
 app.use(
@@ -95,6 +96,8 @@ app.use("/users", userRoutes);
 app.use("/resume", resumeRoutes);
 app.use("/scrapping", ScrapperRoutes);
 app.use("/api/mock", mockinterviewsRoutes);
+
+
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

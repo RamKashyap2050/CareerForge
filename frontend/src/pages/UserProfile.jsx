@@ -5,12 +5,15 @@ import ResumeCard from "../Components/ResumeCard";
 import Navbar from "../Components/Navbar";
 import Footer from "../Components/Footer";
 import heic2any from "heic2any";
+import JobTrackerWithResume from "../Components/JobTrackerWithResume";
 
 const UserProfile = () => {
   const [profile, setProfile] = useState(null);
   const [resumes, setResumes] = useState([]);
   const [editField, setEditField] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [autoApplyEnabled, setAutoApplyEnabled] = useState(false);
+  const [autoApplyStatus, setAutoApplyStatus] = useState(null); // 'loading' | 'success' | 'error'
 
   useEffect(() => {
     // Simulate fetching MongoDB user profile
@@ -48,33 +51,41 @@ const UserProfile = () => {
     setEditField(null);
   };
 
-  
-  
   const handleImageUpload = async (e) => {
     let file = e.target.files[0];
-  
+
     if (!file) return;
-  
+
     console.log("Original file:", file);
-  
-    if (file.type === "image/heic" || file.name.toLowerCase().endsWith(".heic")) {
+
+    if (
+      file.type === "image/heic" ||
+      file.name.toLowerCase().endsWith(".heic")
+    ) {
       console.log("Detected HEIC image. Converting to JPEG...");
       try {
-        const convertedBlob = await heic2any({ blob: file, toType: "image/jpeg" });
-        file = new File([convertedBlob], file.name.replace(/\.heic$/i, ".jpg"), {
-          type: "image/jpeg",
+        const convertedBlob = await heic2any({
+          blob: file,
+          toType: "image/jpeg",
         });
+        file = new File(
+          [convertedBlob],
+          file.name.replace(/\.heic$/i, ".jpg"),
+          {
+            type: "image/jpeg",
+          }
+        );
         console.log("Conversion successful. New file:", file);
       } catch (err) {
         console.error("HEIC conversion failed:", err);
         return;
       }
     }
-  
+
     const formData = new FormData();
     formData.append("profilePhoto", file);
     console.log("Uploading image to server:", file);
-  
+
     try {
       const response = await axios.put("/users/profilephotoupdate", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -84,7 +95,6 @@ const UserProfile = () => {
       console.error("Upload failed:", error);
     }
   };
-  
 
   if (loading || !profile) return <div className="p-6">Loading...</div>;
 
@@ -209,58 +219,146 @@ const UserProfile = () => {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto mt-10">
-  <h2 className="text-xl font-bold mb-4">Your Resumes</h2>
-  {resumes.length > 0 ? (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {resumes.map((resume) => {
-        const fullName = `${resume.resumeBio?.FirstName || ""} ${resume.resumeBio?.LastName || ""}`;
-        const recentJob = resume.resumeExperiences?.[0]?.RoleTitle || "No job title";
-        const summarySnippet = resume.resumeSummary?.Summary?.replace(/<[^>]+>/g, "")?.slice(0, 80) || "No summary provided";
+      <div className="max-w-6xl mx-auto mt-10 p-8">
+        <h2 className="text-xl font-bold mb-4">Your Resumes</h2>
+        {resumes.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {resumes.map((resume) => {
+              const fullName = `${resume.resumeBio?.FirstName || ""} ${
+                resume.resumeBio?.LastName || ""
+              }`;
+              const recentJob =
+                resume.resumeExperiences?.[0]?.RoleTitle || "No job title";
+              const summarySnippet =
+                resume.resumeSummary?.Summary?.replace(/<[^>]+>/g, "")?.slice(
+                  0,
+                  80
+                ) || "No summary provided";
 
-        return (
-          <div
-            key={resume.id}
-            className={`p-4 border rounded-lg shadow transition hover:shadow-md bg-white ${
-              profile.defaultResumeId === resume.id ? "border-blue-600" : "border-gray-200"
-            }`}
-          >
-            <div className="mb-2">
-              <h3 className="text-lg font-semibold">{fullName}</h3>
-              <p className="text-sm text-gray-600">{recentJob}</p>
-            </div>
-            <p className="text-gray-700 text-sm mb-4">{summarySnippet}...</p>
+              return (
+                <div
+                  key={resume.id}
+                  className={`p-4 border rounded-lg shadow transition hover:shadow-md bg-white ${
+                    profile.defaultResumeId === resume.id
+                      ? "border-blue-600"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <div className="mb-2">
+                    <h3 className="text-lg font-semibold">{fullName}</h3>
+                    <p className="text-sm text-gray-600">{recentJob}</p>
+                  </div>
+                  <p className="text-gray-700 text-sm mb-4">
+                    {summarySnippet}...
+                  </p>
 
-            <button
-              onClick={() => {
-                axios
-                  .put("/users/profileupdate", {
-                    ...profile,
-                    defaultResumeId: resume.id,
-                  })
-                  .then(() => {
-                    setProfile((prev) => ({ ...prev, defaultResumeId: resume.id }));
-                  });
-              }}
-              className={`px-4 py-2 rounded text-sm font-medium ${
-                profile.defaultResumeId === resume.id
-                  ? "bg-blue-600 text-white cursor-default"
-                  : "bg-gray-100 hover:bg-blue-50 text-blue-700"
-              }`}
-              disabled={profile.defaultResumeId === resume.id}
-            >
-              {profile.defaultResumeId === resume.id ? "Default Resume" : "Set as Default"}
-            </button>
+                  <button
+                    onClick={() => {
+                      axios
+                        .put("/users/profileupdate", {
+                          ...profile,
+                          defaultResumeId: resume.id,
+                        })
+                        .then(() => {
+                          setProfile((prev) => ({
+                            ...prev,
+                            defaultResumeId: resume.id,
+                          }));
+                        });
+                    }}
+                    className={`px-4 py-2 rounded text-sm font-medium ${
+                      profile.defaultResumeId === resume.id
+                        ? "bg-blue-600 text-white cursor-default"
+                        : "bg-gray-100 hover:bg-blue-50 text-blue-700"
+                    }`}
+                    disabled={profile.defaultResumeId === resume.id}
+                  >
+                    {profile.defaultResumeId === resume.id
+                      ? "Default Resume"
+                      : "Set as Default"}
+                  </button>
+                </div>
+              );
+            })}
           </div>
-        );
-      })}
-    </div>
-  ) : (
-    <p className="text-center text-gray-600 text-md">
-      No resumes found. Click "Create Resume" to get started.
-    </p>
-  )}
-</div>
+        ) : (
+          <p className="text-center text-gray-600 text-md">
+            No resumes found. Click "Create Resume" to get started.
+          </p>
+        )}
+      </div>
+      <div className="max-w-6xl mx-auto mt-10 mb-6 p-8">
+        <h2 className="text-xl font-bold mb-4">Auto Apply</h2>
+        <div className="bg-white p-6 rounded shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <p className="text-sm text-gray-600 mb-2">
+              Automatically apply to 20 new jobs daily using your default
+              resume.
+            </p>
+            <p className="text-xs text-gray-500">
+              Make sure your <strong>Job Role</strong> and{" "}
+              <strong>Location</strong> are filled and{" "}
+              <strong>Default Resume</strong> is selected before enabling.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={async () => {
+                const role = profile.jobPreferences?.role?.trim();
+                const location = profile.jobPreferences?.location?.trim();
+
+                if (!role || !location) {
+                  alert(
+                    "⚠️ Please fill in your desired Role and Location in Job Preferences before enabling Auto Apply."
+                  );
+                  return;
+                }
+
+                try {
+                  setAutoApplyStatus("loading");
+                  const res = await axios.post(
+                    "/scrapping/auto-apply",
+                    {},
+                    { withCredentials: true }
+                  );
+                  setAutoApplyStatus("success");
+                  setAutoApplyEnabled(true);
+                } catch (error) {
+                  console.error("Auto Apply failed:", error);
+                  setAutoApplyStatus("error");
+                }
+              }}
+              disabled={autoApplyStatus === "loading"}
+              className={`px-4 py-2 rounded font-medium text-sm transition ${
+                autoApplyStatus === "loading"
+                  ? "bg-gray-400 text-white cursor-wait"
+                  : autoApplyEnabled
+                  ? "bg-green-600 text-white"
+                  : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
+            >
+              {autoApplyStatus === "loading"
+                ? "Running..."
+                : autoApplyEnabled
+                ? "Auto Apply Enabled"
+                : "Enable Auto Apply"}
+            </button>
+
+            {autoApplyStatus === "success" && (
+              <span className="text-green-600 text-sm">
+                ✅ Applied successfully!
+              </span>
+            )}
+            {autoApplyStatus === "error" && (
+              <span className="text-red-500 text-sm">
+                ❌ Failed. Try again.
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      <JobTrackerWithResume />
       <Footer />
     </>
   );

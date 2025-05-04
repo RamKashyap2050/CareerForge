@@ -8,10 +8,18 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold tracking-wide">JobGeniX</h1>
           <nav className="hidden md:flex space-x-6">
-            <a href="#features" className="hover:underline">Features</a>
-            <a href="#pricing" className="hover:underline">Pricing</a>
-            <a href="#testimonials" className="hover:underline">Testimonials</a>
-            <a href="#contact" className="hover:underline">Contact</a>
+            <a href="#features" className="hover:underline">
+              Features
+            </a>
+            <a href="#pricing" className="hover:underline">
+              Pricing
+            </a>
+            <a href="#testimonials" className="hover:underline">
+              Testimonials
+            </a>
+            <a href="#contact" className="hover:underline">
+              Contact
+            </a>
           </nav>
           <a
             href="/signup"
@@ -46,20 +54,20 @@ const LandingPage = () => {
             {[
               {
                 title: "AI-Generated Resumes",
-                desc: "Tailored resumes matching any job description in minutes."
+                desc: "Tailored resumes matching any job description in minutes.",
               },
               {
                 title: "ATS-Friendly",
-                desc: "Ensures your resume passes applicant tracking systems."
+                desc: "Ensures your resume passes applicant tracking systems.",
               },
               {
                 title: "Automated Job Applications",
-                desc: "Let our agent apply to jobs for you, 24/7."
+                desc: "Let our agent apply to jobs for you, 24/7.",
               },
               {
                 title: "Real-Time Dashboard",
-                desc: "Track every job application from a single panel."
-              }
+                desc: "Track every job application from a single panel.",
+              },
             ].map((f, idx) => (
               <div key={idx} className="bg-gray-100 p-6 rounded-lg shadow-md">
                 <h4 className="text-xl font-semibold text-slate-700 mb-2">
@@ -73,45 +81,46 @@ const LandingPage = () => {
       </section>
 
       {/* Testimonials */}
-      <section
-  id="testimonials"
-  className="py-20 bg-gray-100 text-center px-6"
->
-  <h3 className="text-3xl font-bold text-slate-800 mb-12">What Users Say</h3>
-  <div className="max-w-4xl mx-auto grid sm:grid-cols-2 md:grid-cols-3 gap-8">
-    {[
-      {
-        name: "John D.",
-        quote: "I landed my dream job thanks to JobGeniX!",
-        photo: "https://tse3.mm.bing.net/th?id=OIP.MpFoGGnxQ1rwhPxFvgQm6QHaFV&pid=Api&P=0&h=180"
-      },
-      {
-        name: "Sarah K.",
-        quote: "Fast, reliable, and beautifully designed resumes.",
-        photo: "https://randomuser.me/api/portraits/women/44.jpg"
-      },
-      {
-        name: "Emily R.",
-        quote: "I applied to 20 jobs in a day — JobGeniX made it easy.",
-        photo: "https://randomuser.me/api/portraits/women/65.jpg"
-      }
-    ].map((t, idx) => (
-      <div
-        key={idx}
-        className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center"
-      >
-        <img
-          src={t.photo}
-          alt={t.name}
-          className="w-20 h-20 rounded-full object-cover mb-4 shadow"
-        />
-        <p className="italic text-gray-600 mb-2">"{t.quote}"</p>
-        <span className="text-sm font-semibold text-slate-700">- {t.name}</span>
-      </div>
-    ))}
-  </div>
-</section>
-
+      <section id="testimonials" className="py-20 bg-gray-100 text-center px-6">
+        <h3 className="text-3xl font-bold text-slate-800 mb-12">
+          What Users Say
+        </h3>
+        <div className="max-w-4xl mx-auto grid sm:grid-cols-2 md:grid-cols-3 gap-8">
+          {[
+            {
+              name: "John D.",
+              quote: "I landed my dream job thanks to JobGeniX!",
+              photo:
+                "https://tse3.mm.bing.net/th?id=OIP.MpFoGGnxQ1rwhPxFvgQm6QHaFV&pid=Api&P=0&h=180",
+            },
+            {
+              name: "Sarah K.",
+              quote: "Fast, reliable, and beautifully designed resumes.",
+              photo: "https://randomuser.me/api/portraits/women/44.jpg",
+            },
+            {
+              name: "Emily R.",
+              quote: "I applied to 20 jobs in a day — JobGeniX made it easy.",
+              photo: "https://randomuser.me/api/portraits/women/65.jpg",
+            },
+          ].map((t, idx) => (
+            <div
+              key={idx}
+              className="bg-white p-6 rounded-lg shadow-lg flex flex-col items-center"
+            >
+              <img
+                src={t.photo}
+                alt={t.name}
+                className="w-20 h-20 rounded-full object-cover mb-4 shadow"
+              />
+              <p className="italic text-gray-600 mb-2">"{t.quote}"</p>
+              <span className="text-sm font-semibold text-slate-700">
+                - {t.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Pricing Section */}
       <section id="pricing" className="py-20 bg-white px-6 text-center">
@@ -136,7 +145,9 @@ const LandingPage = () => {
 
       {/* Footer */}
       <footer className="bg-slate-800 text-white py-6 text-center">
-        <p className="text-sm">&copy; {new Date().getFullYear()} JobGeniX. All rights reserved.</p>
+        <p className="text-sm">
+          &copy; {new Date().getFullYear()} JobGeniX. All rights reserved.
+        </p>
       </footer>
     </div>
   );

@@ -9,11 +9,12 @@ const MongoUserSchema = new mongoose.Schema(
     },
     username: {
       type: String,
-      default:""
+      default: "",
     },
     profilePhoto: {
       type: String,
-      default: "https://murrayglass.com/wp-content/uploads/2020/10/avatar-2048x2048.jpeg",
+      default:
+        "https://murrayglass.com/wp-content/uploads/2020/10/avatar-2048x2048.jpeg",
     },
     bio: {
       type: String,
@@ -36,7 +37,11 @@ const MongoUserSchema = new mongoose.Schema(
     isSubscriber: {
       type: Boolean,
       default: false,
-    }
+    },
+    glassdoorCookies: {
+      type: Array,
+      default: [],
+    },
   },
   {
     collection: "MongoUsers",

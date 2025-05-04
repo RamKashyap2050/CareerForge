@@ -8,6 +8,9 @@ const ResumeExperience = require("../models/ResumeExperience");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const ResumeEducation = require("../models/ResumeEducation");
 const ResumeExtraSection = require("../models/ResumeExtraSection");
+const GeneratedResumesJSON = require("../models/GeneratedResumeJSONSchema");
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const getDraftUserSingleResume = expressAsyncHandler(async (req, res) => {
   const resumeId = req.params.resumeId;
 
@@ -634,7 +637,6 @@ const mockinterviews = expressAsyncHandler(async (req, res) => {
     // Parse JSON
     const structuredOutput = JSON.parse(generatedOutput);
 
-
     res.status(200).json({
       success: true,
       data: structuredOutput,
@@ -649,6 +651,22 @@ const mockinterviews = expressAsyncHandler(async (req, res) => {
   }
 });
 
+
+
+
+// GET all generated resumes for a user
+const getUserGeneratedResumes = expressAsyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  const resumes = await GeneratedResumesJSON.find({ sqlUserId: userId })
+    .populate("jobId") // Includes job title, description, etc. from scraped jobs
+    .sort({ createdAt: -1 }); // Latest first
+
+  res.status(200).json({ success: true, data: resumes });
+});
+
+
+
 module.exports = {
   createOrUpdateResumeBio,
   updateResumeSummary,
@@ -661,4 +679,5 @@ module.exports = {
   askswiftlet,
   parsenadcreatecustomresume,
   mockinterviews,
+  getUserGeneratedResumes,
 };

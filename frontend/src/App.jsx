@@ -25,7 +25,7 @@ const App = () => {
         <Route path="/home" element={<HomePage />} />
         <Route path="/customresume" element={<CreateCustomResume />} />
         <Route path="/joblistings" element={<JobListings />} />
-        <Route path="/mockinterviews" element={<PrepareInterviews />} />
+        {/* <Route path="/mockinterviews" element={<PrepareInterviews />} />
         <Route path="/interviews" element={<MockInterview />} />
         <Route path="/LinkedinProfile" element={<LinkedInResumeParser />} />
         <Route path="/LinkedinProfile" element={<LinkedInResumeParser />} />
@@ -34,7 +34,7 @@ const App = () => {
           path="/InduvidualProblem/:problemID"
           element={<IndividualProblem />}
         />
-        <Route path="/jobstrategy" element={<JobStrategyBoard />} />
+        <Route path="/jobstrategy" element={<JobStrategyBoard />} /> */}
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </Router>

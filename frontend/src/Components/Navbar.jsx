@@ -53,7 +53,7 @@ const Navbar = () => {
                   >
                     Create Resume
                   </span>
-                  <span
+                  {/* <span
                     onClick={() => navigate("/LinkedinProfile")}
                     className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
                   >
@@ -70,13 +70,13 @@ const Navbar = () => {
                     className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
                   >
                     Post Content
-                  </span>
+                  </span> */}
                 </div>
               </div>
             )}
           </div>
 
-          <div className="relative">
+          {/* <div className="relative">
             <button
               onClick={() => setCodeOpen(!codeOpen)}
               className="flex items-center gap-2 text-sm font-medium hover:text-blue-400 transition"
@@ -101,7 +101,7 @@ const Navbar = () => {
                 </div>
               </div>
             )}
-          </div>
+          </div> */}
 
           <button
             onClick={() => navigate("/joblistings")}
